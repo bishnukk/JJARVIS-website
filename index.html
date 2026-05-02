@@ -551,6 +551,9 @@ footer{position:relative;z-index:2;border-top:1px dashed var(--border);padding:3
       </tbody>
     </table>
   </div>
+  <div style="text-align:center;margin-top:24px;">
+    <button id="view-all-btn" class="btn-ghost" onclick="toggleHistory()">View All Trades</button>
+  </div>
 </section>
 
 </main>
@@ -573,6 +576,7 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 // ═══════════════════════════════════
 let allSignals = [];
 let chartInstance = null;
+let showAllHistory = false;
 
 // ═══════════════════════════════════
 // CORE FUNCTIONS
@@ -787,16 +791,22 @@ function renderActive() {
 
 function renderHistory() {
   const tb = document.getElementById('hist-body');
+  const btn = document.getElementById('view-all-btn');
   if (!tb) return;
   
   const closed = allSignals.filter(s => s.exit_price);
   
   if (!closed.length) {
     tb.innerHTML = `<tr><td colspan="5"><div class="empty"><div class="empty-i">📭</div><div class="empty-t">No closed trades yet.</div></div></td></tr>`;
+    if (btn) btn.style.display = 'none';
     return;
   }
 
-  tb.innerHTML = closed.slice(0, 100).map(s => {
+  if (btn) btn.style.display = 'inline-block';
+  const displayCount = showAllHistory ? 100 : 4;
+  if (btn) btn.textContent = showAllHistory ? 'Show Recent Only' : 'View All Trades';
+
+  tb.innerHTML = closed.slice(0, displayCount).map(s => {
     const pnl = calcPnL(s);
     const action = (s.action || '').toUpperCase();
     const sideClass = (action === 'BUY' || action === 'LONG') ? 'long' : 'short';
@@ -809,6 +819,11 @@ function renderHistory() {
       <td><span class="${pnl >= 0 ? 'ppos' : 'pneg'}">${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}%</span></td>
     </tr>`;
   }).join('');
+}
+
+function toggleHistory() {
+  showAllHistory = !showAllHistory;
+  renderHistory();
 }
 
 function startRealtime() {
