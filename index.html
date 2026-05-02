@@ -712,20 +712,32 @@ function renderStats() {
 }
 
 async function fetchLivePrices(activeSignals) {
-  const symbols = [...new Set(activeSignals.map(s => s.symbol.replace('/', '').replace(':', '')))];
+  // Clean symbols: 'AVAX/USDT:USDT' -> 'AVAXUSDT'
+  const symbols = [...new Set(activeSignals.map(s => {
+    const base = s.symbol.split(':')[0]; // Remove :USDT suffix
+    return base.replace('/', '').toUpperCase();
+  }))];
+  
   if (!symbols.length) return {};
   
   const priceMap = {};
   try {
+    // Using a CORS proxy to bypass Binance's browser restrictions
     const requests = symbols.map(async (s) => {
       try {
-        const resp = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${s}`);
+        const url = `https://api.binance.com/api/v3/ticker/price?symbol=${s}`;
+        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+        const resp = await fetch(proxyUrl);
         const data = await resp.json();
         if (data.price) priceMap[s] = parseFloat(data.price);
-      } catch (e) {}
+      } catch (e) {
+        console.warn(`Price fetch failed for ${s}:`, e);
+      }
     });
     await Promise.all(requests);
-  } catch (e) {}
+  } catch (e) {
+    console.error("Global price fetch error:", e);
+  }
   return priceMap;
 }
 
@@ -735,7 +747,7 @@ async function updateUnrealized() {
 
   const prices = await fetchLivePrices(active);
   active.forEach(s => {
-    const cleanSym = s.symbol.replace('/', '').replace(':', '');
+    const cleanSym = s.symbol.split(':')[0].replace('/', '').toUpperCase();
     const current = prices[cleanSym];
     if (current) {
       const entry = Number(s.entry_price);
