@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Trade AI | Real-Time AI Auto-Trading Signals for Binance Futures</title>
+  <title>Trade AI | Production-Grade Real-Time Signals</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>"/>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -388,42 +388,6 @@ main{position:relative;z-index:2;}
 .chart-card h3{font-family:var(--fb);font-size:.9rem;letter-spacing:.1em;text-transform:uppercase;color:var(--cyan);margin-bottom:20px;}
 .chart-card h3::before { content: '>> '; color: var(--pink); }
 
-/* ── FEATURES ── */
-.feat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:15px;}
-.feat-card{
-  background:rgba(0,255,255,.03);
-  border:1px solid rgba(0,255,255,.15);
-  padding:20px;font-family:var(--fb);font-size:.9rem;
-  transition:all .2s;cursor:none;
-}
-.feat-card:hover{border-color:var(--pink);background:rgba(255,0,255,.05);transform:translateY(-2px); box-shadow: inset 0 0 15px rgba(255,0,255,0.2);}
-.feat-icon{font-size:1.4rem;margin-bottom:10px; filter: hue-rotate(90deg);}
-
-/* ── PRICING ── */
-.pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
-.price-card{
-  background:rgba(5,5,5,0.9);
-  border:1px solid var(--border);padding:30px;
-  position:relative;transition:all .3s;
-}
-.price-card.pro{border-color:var(--pink);box-shadow:0 0 20px rgba(255,0,255,.15);}
-.price-card.pro::before{content:'';position:absolute;top:0;left:0;width: 100%;height:3px;background:var(--pink);}
-.price-badge{
-  position:absolute;top:0;right:0;
-  font-family:var(--fb);font-size:.7rem;font-weight:700;letter-spacing:.1em;
-  background:var(--pink);color:#000;
-  padding:4px 12px;
-}
-.price-name{font-family:var(--fh);font-size:.85rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan);margin-bottom:12px;}
-.price-amt{font-family:var(--fb);font-size:3rem;font-weight:900;letter-spacing:-.02em;margin-bottom:20px;}
-.price-amt.free{color:var(--muted);}
-.price-amt.pro{color:var(--text);text-shadow:0 0 15px rgba(255,0,255,.4);}
-.price-items{list-style:none;margin-bottom:30px;}
-.price-items li{font-family:var(--fb); font-size:.9rem;color:var(--muted);padding:6px 0;display:flex;align-items:center;gap:10px;}
-.price-items li::before{content:'[+]';color:var(--pink);font-size:.8rem;}
-.price-items li.on{color:var(--text);}
-.price-items li.on::before{content:'[x]';color:var(--cyan);}
-
 /* ── TABLE ── */
 .table-wrap{background:rgba(5,5,5,0.8);border:1px solid var(--border); overflow-x: auto;}
 table{width:100%;border-collapse:collapse;}
@@ -440,23 +404,6 @@ tbody tr:hover td{background:rgba(0,255,255,.05);}
 .ppos{color:var(--green);font-weight:700;text-shadow:0 0 10px rgba(57,255,20,.3);}
 .pneg{color:var(--red);font-weight:700;}
 
-/* ── CTA BANNER ── */
-.cta-banner{
-  background:rgba(255,0,255,.05);border:1px solid var(--pink);
-  padding:36px;
-  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;
-  position:relative;
-  clip-path: polygon(0 20px, 20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%);
-}
-.cta-banner::after { content: ''; position: absolute; left:-2px; top:-2px; width: 20px; height: 2px; background: var(--cyan); }
-.cta-banner h3{font-family:var(--fh);font-size:1.2rem;font-weight:700;letter-spacing:.1em;margin-bottom:8px; text-transform: uppercase; color: var(--pink);}
-.cta-banner p{font-family:var(--fb); color:var(--text);font-size:1rem;}
-
-/* ── EMPTY ── */
-.empty{text-align:center;padding:72px 24px;color:var(--muted); font-family: var(--fb);}
-.empty-i{font-size:2rem;margin-bottom:14px; color: var(--cyan);}
-.empty-t{font-size:1rem;}
-
 /* ── SHIMMER ── */
 .shimmer{
   background:linear-gradient(90deg,rgba(0,255,255,.05) 25%,rgba(0,255,255,.15) 50%,rgba(0,255,255,.05) 75%);
@@ -465,7 +412,7 @@ tbody tr:hover td{background:rgba(0,255,255,.05);}
 }
 @keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
 
-/* ── LOADING SCREEN ── */
+/* ── BOOT SCREEN ── */
 .boot-screen{
   position:fixed;inset:0;z-index:1000;
   background:#000;
@@ -484,22 +431,16 @@ tbody tr:hover td{background:rgba(0,255,255,.05);}
 }
 @keyframes scanLine{from{top:0}to{top:100%}}
 
-/* ── FOOTER ── */
 footer{position:relative;z-index:2;border-top:1px dashed var(--border);padding:36px 28px;text-align:center;}
 .foot-logo{font-family:var(--fh);font-size:1.2rem;font-weight:900;letter-spacing:.2em;color:var(--muted);margin-bottom:14px;}
 .foot-txt{font-family:var(--fb); font-size:.8rem;color:var(--muted);line-height:1.75;}
 
-/* ── SCROLL FADE ── */
 .fade-up{opacity:0;transform:translateY(28px);transition:all .8s cubic-bezier(.23,1,.32,1);}
 .fade-up.in{opacity:1;transform:none;}
 
-/* ── RESPONSIVE ── */
 @media(max-width:768px){
-  .pricing-grid{grid-template-columns:1fr;}
   .cards-grid{grid-template-columns:1fr;}
   .metrics-row{flex-direction:column;}
-  .hide-m{display:none;}
-  .nav-slots{display:none;}
   .section{padding:48px 0;}
   .orb-wrap{width:200px;height:200px;}
 }
@@ -512,7 +453,7 @@ footer{position:relative;z-index:2;border-top:1px dashed var(--border);padding:3
   <div class="scan-line"></div>
   <div class="boot-logo glitch-hover">&lt;TRADE<span style="color:var(--cyan)">//</span>AI&gt;</div>
   <div class="boot-bar"><div class="boot-fill" id="boot-fill"></div></div>
-  <div class="boot-txt" id="boot-txt">INITIALIZING AI ENGINE…</div>
+  <div class="boot-txt" id="boot-txt">INITIALIZING PRODUCTION ENGINE…</div>
 </div>
 
 <!-- CURSOR -->
@@ -530,8 +471,7 @@ footer{position:relative;z-index:2;border-top:1px dashed var(--border);padding:3
     <a href="#" class="logo glitch-hover"><div class="logo-box">SYS</div>&lt;TRADE<span style="color:var(--pink)">//</span>AI&gt;</a>
     <div class="nav-r">
       <div class="live-pill"><span class="live-dot"></span>AI • LIVE</div>
-      <div class="nav-slots" id="nav-slots">[ --- SLOTS LEFT ]</div>
-      <a href="#pricing" class="btn-cta">Get Pro</a>
+      <div class="nav-slots" id="nav-slots">[ LIVE DATASTREAM ACTIVE ]</div>
     </div>
   </div>
 </nav>
@@ -540,7 +480,7 @@ footer{position:relative;z-index:2;border-top:1px dashed var(--border);padding:3
 
 <!-- HERO -->
 <section class="hero page">
-  <div class="hero-badge" id="h-badge"><span class="live-dot"></span>AI-Powered &nbsp;•&nbsp; Multi-Indicator &nbsp;•&nbsp; Real-Time</div>
+  <div class="hero-badge" id="h-badge"><span class="live-dot"></span>Production-Grade &nbsp;•&nbsp; Real-Time &nbsp;•&nbsp; Verified Data</div>
   <div class="orb-wrap" id="h-orb">
     <div class="orb-glow"></div>
     <div class="orb-r3"></div>
@@ -549,17 +489,7 @@ footer{position:relative;z-index:2;border-top:1px dashed var(--border);padding:3
     <div class="orb-core"></div>
   </div>
   <h1 id="h-h1" class="glitch-hover">REAL SIGNALS.<br/><em> REAL RESULTS.</em></h1>
-  <p class="hero-sub" id="h-sub">AI-powered crypto signals with full transparency — entry, exit &amp; stop-loss powered by 5–6 indicator confluence and live social sentiment analysis.</p>
-  <div class="hero-btns" id="h-btns">
-    <a href="#signals" class="btn-cta glitch-hover">[ INITIALIZE DATASTREAM ]</a>
-    <a href="#performance" class="btn-ghost glitch-hover">SYS.PERFORMANCE_LOGS()</a>
-  </div>
-  <div class="trust-strip" id="h-trust">
-    <div class="trust-item">✓ 70%+ Win Rate (1500+ Backtest Bars)</div>
-    <div class="trust-item">✓ Automated Risk Management built-in</div>
-    <div class="trust-item">✓ Updated Every 60 Seconds</div>
-    <div class="trust-item">✓ No Hidden Trades</div>
-  </div>
+  <p class="hero-sub" id="h-sub">Zero-latency trading signals powered by real-time Supabase integration. No demo data. No delays. Just raw execution data.</p>
   <div class="metrics-row" id="h-metrics">
     <div class="metric"><div class="metric-v c" id="m-active">—</div><div class="metric-l">Active Signals</div></div>
     <div class="metric"><div class="metric-v g" id="m-wr">—</div><div class="metric-l">Win Rate</div></div>
@@ -579,7 +509,7 @@ footer{position:relative;z-index:2;border-top:1px dashed var(--border);padding:3
     <div class="sec-title">Performance Analytics</div>
   </div>
   <div class="chart-card">
-    <h3>📈 Equity Curve — Last 10 Weeks</h3>
+    <h3>📈 Equity Curve — Real Performance</h3>
     <div id="chart-root" style="height:280px"></div>
   </div>
 </section>
@@ -587,11 +517,11 @@ footer{position:relative;z-index:2;border-top:1px dashed var(--border);padding:3
 <!-- LIVE EXECUTION LOG -->
 <section class="section page fade-up" id="log-section">
   <div class="sec-head">
-    <div class="sec-title">📡 Live Execution Log</div>
-    <div class="nav-slots" style="font-size:.6rem">STATUS: [ AGENT_ACTIVE ]</div>
+    <div class="sec-title">📡 Real-Time Event Stream</div>
+    <div class="nav-slots" style="font-size:.6rem">STATUS: [ AGENT_ONLINE ]</div>
   </div>
   <div class="term-wrap" id="term-log">
-    <div class="term-line"><span class="term-ts">[00:00:00]</span><span class="term-msg sys">SYSTEM INITIALIZED. WAITING FOR DATASTREAM…</span></div>
+    <div class="term-line"><span class="term-ts">[00:00:00]</span><span class="term-msg sys">ESTABLISHING SUPABASE CONNECTION...</span></div>
   </div>
 </section>
 
@@ -599,31 +529,13 @@ footer{position:relative;z-index:2;border-top:1px dashed var(--border);padding:3
 <section class="section page fade-up" id="signals">
   <div class="sec-head">
     <div class="sec-title">⚡ Live Signals <span class="cnt-badge" id="act-badge">0</span></div>
-    <button onclick="loadData()" style="background:none;border:1px solid var(--border);color:var(--muted);font-family:var(--fh);font-size:.62rem;letter-spacing:.1em;padding:8px 14px;border-radius:8px;cursor:none;transition:all .2s"
-      onmouseover="this.style.borderColor='var(--green)';this.style.color='var(--green)'"
-      onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">↻ REFRESH</button>
   </div>
   <div class="cards-grid" id="act-grid">
     <div class="shimmer"></div><div class="shimmer" style="opacity:.5"></div>
   </div>
 </section>
 
-<!-- FEATURES -->
-<section class="section page fade-up">
-  <div class="sec-head">
-    <div class="sec-title">🔧 How Trade AI Thinks (The Secret Sauce)</div>
-  </div>
-  <div class="feat-grid" id="feat-grid">
-    <div class="feat-card"><div class="feat-icon">🏦</div>Institutional Smart Money Concepts</div>
-    <div class="feat-card"><div class="feat-icon">📡</div>Machine Learning Optimization</div>
-    <div class="feat-card"><div class="feat-icon">🌊</div>Live Liquidations & Order Flow</div>
-    <div class="feat-card"><div class="feat-icon">🌐</div>Social Sentiment Analysis</div>
-    <div class="feat-card"><div class="feat-icon">📊</div>Automated Risk Management</div>
-    <div class="feat-card"><div class="feat-icon">⚙️</div>Zero-Latency Auto-Trade Selection</div>
-  </div>
-</section>
-
-<!-- HISTORY (Unified Trade Monitor) -->
+<!-- HISTORY -->
 <section class="section page fade-up" id="history">
   <div class="sec-head">
     <div class="sec-title">📉 Trade Monitor <span class="cnt-badge" id="hist-badge">0</span></div>
@@ -631,55 +543,12 @@ footer{position:relative;z-index:2;border-top:1px dashed var(--border);padding:3
   <div class="table-wrap">
     <table>
       <thead><tr>
-        <th>Symbol</th><th>Action</th><th>State</th>
-        <th>Buy Price</th><th>Sell Price</th>
-        <th>PnL</th>
+        <th>Symbol</th><th>Action</th><th>Entry</th><th>Exit</th><th>PnL %</th>
       </tr></thead>
       <tbody id="hist-body">
-        <tr><td colspan="6"><div class="empty"><div class="empty-i">⏳</div><div class="empty-t">Loading…</div></div></td></tr>
+        <tr><td colspan="5"><div class="empty"><div class="empty-i">⏳</div><div class="empty-t">Waiting for datastream…</div></div></td></tr>
       </tbody>
     </table>
-  </div>
-</section>
-
-<!-- PRICING -->
-<section class="section page fade-up" id="pricing">
-  <div class="sec-head"><div class="sec-title">💰 Pricing</div></div>
-  <div class="pricing-grid">
-    <div class="price-card">
-      <div class="price-name">Free Plan</div>
-      <div class="price-amt free">$0</div>
-      <ul class="price-items">
-        <li>Limited signals (2/day)</li>
-        <li>Delayed 15 min</li>
-        <li>No SL/TP levels</li>
-      </ul>
-      <a href="#" class="btn-ghost" style="display:inline-block;font-size:.65rem">Get Started →</a>
-    </div>
-    <div class="price-card pro">
-      <div class="price-badge">MOST POPULAR</div>
-      <div class="price-name">Pro Plan</div>
-      <div class="price-amt pro">$19<span style="font-size:1rem;color:var(--muted)">/mo</span></div>
-      <p style="font-size:0.75rem; color:var(--red); font-weight: 600; padding-bottom: 15px;">In crypto, a 15-minute delay usually means missing the entire move. Upgrade to Pro for instant, 0-latency execution.</p>
-      <ul class="price-items">
-        <li class="on">All signals unlocked (Zero Latency)</li>
-        <li class="on">Instant Webhook & Telegram Alerts</li>
-        <li class="on">Full SL / TP levels included</li>
-        <li class="on">AI signal logic explanations</li>
-      </ul>
-      <a href="#" class="btn-cta" style="display:inline-block">🚀 Upgrade to Pro</a>
-    </div>
-  </div>
-</section>
-
-<!-- CTA -->
-<section class="section page fade-up">
-  <div class="cta-banner">
-    <div>
-      <h3>Ready to trade with verified AI signals?</h3>
-      <p>Live entries, transparent outcomes, and risk controls built in.</p>
-    </div>
-    <a href="#pricing" class="btn-cta glitch-hover">EXECUTE [PRO] UPGRADE</a>
   </div>
 </section>
 
@@ -687,418 +556,368 @@ footer{position:relative;z-index:2;border-top:1px dashed var(--border);padding:3
 
 <footer>
   <div class="foot-logo glitch-hover">&lt;TRADE<span style="color:var(--cyan)">//</span>AI&gt;_</div>
-  <div class="foot-txt">⚠ Cryptocurrency trading involves substantial risk.<br/>Past performance does not guarantee future results. Trade responsibly. © 2025 Trade AI</div>
+  <div class="foot-txt">⚠ High-risk trading environment. All data sourced directly from production signals table. © 2025 Trade AI</div>
 </footer>
 
-<!-- RECHARTS MOUNT -->
 <script>
-(function(){
+// ═══════════════════════════════════
+// SUPABASE CONFIG
+// ═══════════════════════════════════
+const SUPABASE_URL = 'https://hlfianhpyryrnnmxwlcy.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhsZmlhbmhweXJ5cm5ubXh3bGN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMTc5MjIsImV4cCI6MjA5MTg5MzkyMn0.SeCgt7JYkYpKmjWSAYBlkLOuE5cL7HkvvjD02WGk4Ik';
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ═══════════════════════════════════
+// GLOBAL STATE
+// ═══════════════════════════════════
+let allSignals = [];
+let chartInstance = null;
+
+// ═══════════════════════════════════
+// CORE FUNCTIONS
+// ═══════════════════════════════════
+
+async function fetchSignals() {
+  let allData = [];
+  let from = 0;
+  const step = 1000;
+  let hasMore = true;
+
+  logToTerminal("FETCHING ARCHIVED DATA FROM SUPABASE...", "sys");
+
+  while (hasMore) {
+    const { data, error } = await supabaseClient
+      .from("signals")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .range(from, from + step - 1);
+
+    if (error) {
+      logToTerminal(`Supabase Error: ${error.message}`, 'warn');
+      console.error(error);
+      return allData;
+    }
+
+    if (data && data.length > 0) {
+      allData = [...allData, ...data];
+      from += step;
+      if (data.length < step) hasMore = false;
+    } else {
+      hasMore = false;
+    }
+  }
+
+  logToTerminal(`SYNCED ${allData.length} TOTAL SIGNALS.`, "sys");
+  return allData;
+}
+
+function calcPnL(s) {
+  // Requirement: If pnl_pct exists → use it
+  if (s.pnl_pct != null) return Number(s.pnl_pct);
+  
+  // Requirement: Else calculate if exit exists
+  if (!s.entry_price || !s.exit_price) return 0;
+  
+  const entry = Number(s.entry_price);
+  const exit = Number(s.exit_price);
+  const action = (s.action || '').toUpperCase();
+
+  // Formulas from requirement
+  if (action === 'BUY' || action === 'LONG') {
+    return ((exit - entry) / entry) * 100;
+  } else if (action === 'SELL' || action === 'SHORT') {
+    return ((entry - exit) / entry) * 100;
+  }
+  return 0;
+}
+
+function renderStats() {
+  const active = allSignals.filter(s => !s.exit_price);
+  const closed = allSignals.filter(s => s.exit_price);
+  
+  const winTrades = closed.filter(s => calcPnL(s) > 0);
+  const winRate = closed.length ? (winTrades.length / closed.length) * 100 : 0;
+  const totalPnL = closed.reduce((acc, s) => acc + calcPnL(s), 0);
+
+  animNum(document.getElementById('m-active'), active.length);
+  animNum(document.getElementById('m-wr'), winRate, '%', 1);
+  animNum(document.getElementById('m-pnl'), totalPnL, '%', 2, totalPnL >= 0 ? 'g' : 'r');
+  animNum(document.getElementById('m-tot'), allSignals.length);
+  
+  if (document.getElementById('act-badge')) document.getElementById('act-badge').textContent = active.length;
+  if (document.getElementById('hist-badge')) document.getElementById('hist-badge').textContent = closed.length;
+}
+
+function renderActive() {
+  const el = document.getElementById('act-grid');
+  if (!el) return;
+  
+  const active = allSignals.filter(s => !s.exit_price);
+  
+  if (!active.length) {
+    el.innerHTML = `<div style="grid-column:1/-1"><div class="empty"><div class="empty-i">🔍</div><div class="empty-t">No active signals found in database.</div></div></div>`;
+    return;
+  }
+
+  el.innerHTML = active.map(s => {
+    const action = (s.action || '').toUpperCase();
+    const dirClass = (action === 'BUY' || action === 'LONG') ? 'long' : 'short';
+    const conf = Math.round((s.confidence || 0) * 100);
+    
+    return `<div class="sig-card ${dirClass}">
+      <div class="card-top">
+        <div class="card-sym">${s.symbol || '—'}</div>
+        <div class="dir-tag ${dirClass}">${action}</div>
+      </div>
+      <div class="price-grid">
+        <div class="pf"><label>Entry</label><div class="v en">${fmt(s.entry_price)}</div></div>
+        <div class="pf"><label>SL</label><div class="v sl">${fmt(s.sl_price)}</div></div>
+        <div class="pf"><label>TP</label><div class="v tp">${fmt(s.tp_price)}</div></div>
+      </div>
+      <div class="conf-wrap">
+        <div class="conf-l"><span>Confidence</span><span>${conf}%</span></div>
+        <div class="conf-bar"><div class="conf-fill" style="width:${conf}%"></div></div>
+      </div>
+      <div class="card-foot">
+        <div class="tf-tag">${s.timeframe || '—'}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderHistory() {
+  const tb = document.getElementById('hist-body');
+  if (!tb) return;
+  
+  const closed = allSignals.filter(s => s.exit_price);
+  
+  if (!closed.length) {
+    tb.innerHTML = `<tr><td colspan="5"><div class="empty"><div class="empty-i">📭</div><div class="empty-t">No closed trades yet.</div></div></td></tr>`;
+    return;
+  }
+
+  tb.innerHTML = closed.slice(0, 100).map(s => {
+    const pnl = calcPnL(s);
+    const action = (s.action || '').toUpperCase();
+    const sideClass = (action === 'BUY' || action === 'LONG') ? 'long' : 'short';
+    
+    return `<tr>
+      <td style="font-family:var(--fh);font-size:.82rem;font-weight:700;">${s.symbol || '—'}</td>
+      <td><span class="pill ${sideClass}">${action}</span></td>
+      <td>${fmt(s.entry_price)}</td>
+      <td>${fmt(s.exit_price)}</td>
+      <td><span class="${pnl >= 0 ? 'ppos' : 'pneg'}">${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}%</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function startRealtime() {
+  supabaseClient
+    .channel("signals-realtime")
+    .on("postgres_changes", { event: "*", schema: "public", table: "signals" }, (payload) => {
+      const { eventType, new: newRow, old: oldRow } = payload;
+      logToTerminal(`DB EVENT: ${eventType} on ${newRow?.symbol || oldRow?.symbol || 'ID:' + (newRow?.id || oldRow?.id)}`, 'trade');
+      refreshAll();
+    })
+    .subscribe();
+}
+
+// ═══════════════════════════════════
+// UTILS
+// ═══════════════════════════════════
+
+async function refreshAll() {
+  allSignals = await fetchSignals();
+  renderStats();
+  renderActive();
+  renderHistory();
+  buildTicker(allSignals);
+  updateChart();
+}
+
+function fmt(n) {
+  if (n == null || n === '') return '—';
+  const v = Number(n);
+  return v >= 1000 ? v.toLocaleString(undefined, { maximumFractionDigits: 2 }) : v.toFixed(v < 1 ? 6 : 2);
+}
+
+function animNum(el, to, suf = '', dec = 0, colorClass = '') {
+  if (!el) return;
+  if (colorClass) el.className = 'metric-v ' + colorClass;
+  let from = parseFloat(el.textContent) || 0;
+  const s = performance.now(), d = 1000;
+  (function step(now) {
+    const p = Math.min((now - s) / d, 1), e = 1 - Math.pow(1 - p, 4), v = from + (to - from) * e;
+    el.textContent = (dec ? v.toFixed(dec) : Math.round(v)) + suf;
+    if (p < 1) requestAnimationFrame(step);
+  })(performance.now());
+}
+
+function logToTerminal(msg, type = '') {
+  const log = document.getElementById('term-log');
+  if (!log) return;
+  const ts = new Date().toLocaleTimeString('en-GB', { hour12: false });
+  const line = document.createElement('div');
+  line.className = 'term-line';
+  line.innerHTML = `<span class="term-ts">[${ts}]</span><span class="term-msg ${type}">${msg}</span>`;
+  log.appendChild(line);
+  log.scrollTop = log.scrollHeight;
+  if (log.children.length > 100) log.removeChild(log.children[1]);
+}
+
+function buildTicker(data) {
+  const t = document.getElementById('ticker');
+  if (!t) return;
+  const items = data.slice(0, 10).map(s => {
+    const action = (s.action || '').toUpperCase();
+    const colorClass = (action === 'BUY' || action === 'LONG') ? 'tl' : 'ts';
+    return `<div class="tick-item"><span>${s.symbol}</span><span class="tm">|</span><span class="${colorClass}">${action}</span></div>`;
+  }).join('<span class="tm" style="color:rgba(255,255,255,.07)">———</span>');
+  t.innerHTML = items + items;
+}
+
+// ═══════════════════════════════════
+// PERFORMANCE CHART (REACT/RECHARTS)
+// ═══════════════════════════════════
+
+function updateChart() {
+  const closed = [...allSignals]
+    .filter(s => s.exit_price)
+    .sort((a, b) => new Date(a.closed_at || a.created_at) - new Date(b.closed_at || b.created_at));
+
+  let equity = 100;
+  const data = [{ name: 'Start', eq: 100 }];
+  
+  closed.forEach((s, i) => {
+    equity += calcPnL(s);
+    data.push({
+      name: s.symbol,
+      eq: Number(equity.toFixed(2))
+    });
+  });
+
+  if (data.length < 2) {
+    // Fill with empty data if none exists
+    for(let i=1; i<=5; i++) data.push({ name: 'Waiting...', eq: 100 });
+  }
+
   const { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } = Recharts;
   const e = React.createElement;
 
-  const perfData = [
-    {d:'W1',eq:100},{d:'W2',eq:107},{d:'W3',eq:113},
-    {d:'W4',eq:110},{d:'W5',eq:121},{d:'W6',eq:129},
-    {d:'W7',eq:138},{d:'W8',eq:146},{d:'W9',eq:151},{d:'W10',eq:160}
-  ];
-
   function Chart() {
     return e(ResponsiveContainer, { width: "100%", height: "100%" },
-      e(AreaChart, { data: perfData, margin: { top: 10, right: 10, left: -10, bottom: 0 } },
+      e(AreaChart, { data, margin: { top: 10, right: 10, left: -10, bottom: 0 } },
         e('defs', null,
           e('linearGradient', { id: "cg", x1: "0", y1: "0", x2: "0", y2: "1" },
-            e('stop', { offset: "5%", stopColor: "#00ff9f", stopOpacity: 0.35 }),
-            e('stop', { offset: "95%", stopColor: "#00ff9f", stopOpacity: 0 })
+            e('stop', { offset: "5%", stopColor: "#00ffff", stopOpacity: 0.35 }),
+            e('stop', { offset: "95%", stopColor: "#00ffff", stopOpacity: 0 })
           )
         ),
-        e(CartesianGrid, { stroke: "rgba(0,255,159,0.06)", strokeDasharray: "3 3" }),
-        e(XAxis, { dataKey: "d", stroke: "#3a5060", tick: { fontFamily: "'Orbitron',sans-serif", fontSize: 10 } }),
+        e(CartesianGrid, { stroke: "rgba(0,255,255,0.06)", strokeDasharray: "3 3" }),
+        e(XAxis, { dataKey: "name", stroke: "#3a5060", hide: true }),
         e(YAxis, { stroke: "#3a5060", tick: { fontFamily: "'Orbitron',sans-serif", fontSize: 10 } }),
-        e(Tooltip, { contentStyle: { background: '#041014', border: '1px solid rgba(0,255,159,.25)', fontFamily: "'Orbitron',sans-serif", fontSize: 11, borderRadius: 8 } }),
-        e(Area, { type: "monotone", dataKey: "eq", stroke: "#00d4ff", fill: "url(#cg)", strokeWidth: 2.5 })
+        e(Tooltip, { contentStyle: { background: '#041014', border: '1px solid rgba(0,255,255,.25)', fontFamily: "'Orbitron',sans-serif", fontSize: 11, borderRadius: 8 } }),
+        e(Area, { type: "monotone", dataKey: "eq", stroke: "#00ffff", fill: "url(#cg)", strokeWidth: 2, animationDuration: 500 })
       )
     );
   }
 
   const rootEl = document.getElementById('chart-root');
-  if(rootEl) ReactDOM.createRoot(rootEl).render(e(Chart));
-})();
-</script>
+  if (rootEl) {
+    if (!chartInstance) chartInstance = ReactDOM.createRoot(rootEl);
+    chartInstance.render(e(Chart));
+  }
+}
 
-<script>
 // ═══════════════════════════════════
-// BOOT SEQUENCE
+// INITIALIZATION
 // ═══════════════════════════════════
-(function(){
+
+(function init() {
+  // Boot Sequence
   const fill = document.getElementById('boot-fill');
   const txt  = document.getElementById('boot-txt');
-  const msgs = ['LOADING AI ENGINE…','CONNECTING MARKET DATA…','SCANNING INDICATORS…','ANALYZING SENTIMENT…','SIGNAL ENGINE READY ✓'];
+  const msgs = ['INIT PRODUCTION ENGINE…', 'SYNCING SUPABASE…', 'MAPPING DATA MODEL…', 'STARTING REAL-TIME MESH…', 'SYSTEM READY ✓'];
   let pct = 0;
   const tick = setInterval(() => {
-    pct += Math.random()*18 + 4;
-    if(pct > 100) pct = 100;
-    fill.style.width = pct + '%';
-    txt.textContent = msgs[Math.min(Math.floor(pct/21), msgs.length-1)];
-    if(pct >= 100){
+    pct += Math.random() * 15 + 5;
+    if (pct > 100) pct = 100;
+    if (fill) fill.style.width = pct + '%';
+    if (txt) txt.textContent = msgs[Math.min(Math.floor(pct / 21), msgs.length - 1)];
+    if (pct >= 100) {
       clearInterval(tick);
-      setTimeout(() => document.getElementById('boot').classList.add('hidden'), 400);
+      setTimeout(() => {
+        document.getElementById('boot').classList.add('hidden');
+        logToTerminal("SYSTEM ONLINE. LISTENING FOR DATABASE EVENTS...", "sys");
+        refreshAll();
+        startRealtime();
+      }, 500);
     }
-  }, 180);
-})();
+  }, 120);
 
-// ═══════════════════════════════════
-// THREE.JS BACKGROUND
-// ═══════════════════════════════════
-(function(){
-  const canvas = document.getElementById('bg-canvas');
-  const R = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
-  R.setPixelRatio(Math.min(devicePixelRatio, 2));
-  R.setSize(innerWidth, innerHeight);
-  R.setClearColor(0x000000, 0);
+  // Three.js Background
+  (function initThree() {
+    const canvas = document.getElementById('bg-canvas');
+    if (!canvas) return;
+    const R = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    R.setPixelRatio(Math.min(devicePixelRatio, 2));
+    R.setSize(innerWidth, innerHeight);
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 1000);
+    camera.position.set(0, 0, 80);
 
-  const scene  = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 1000);
-  camera.position.set(0, 0, 80);
+    const N = window.innerWidth < 768 ? 500 : 1200;
+    const pos = new Float32Array(N * 3), col = new Float32Array(N * 3);
+    for (let i = 0; i < N; i++) {
+      pos[i * 3] = (Math.random() - .5) * 320;
+      pos[i * 3 + 1] = (Math.random() - .5) * 220;
+      pos[i * 3 + 2] = (Math.random() - .5) * 160;
+      const t = Math.random();
+      if (t < .5) { col[i * 3] = 0; col[i * 3 + 1] = 1; col[i * 3 + 2] = .62; }
+      else if (t < .8) { col[i * 3] = 0; col[i * 3 + 1] = .83; col[i * 3 + 2] = 1; }
+      else { col[i * 3] = .48; col[i * 3 + 1] = .18; col[i * 3 + 2] = 1; }
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    const mat = new THREE.PointsMaterial({ size: .75, vertexColors: true, transparent: true, opacity: .4, blending: THREE.AdditiveBlending, depthWrite: false });
+    scene.add(new THREE.Points(geo, mat));
 
-  // PARTICLES
-  const N = window.innerWidth < 768 ? 600 : 1400;
-  const pos = new Float32Array(N*3), col = new Float32Array(N*3);
-  for(let i=0;i<N;i++){
-    pos[i*3]   = (Math.random()-.5)*320;
-    pos[i*3+1] = (Math.random()-.5)*220;
-    pos[i*3+2] = (Math.random()-.5)*160;
-    const t = Math.random();
-    if(t<.5){col[i*3]=0;col[i*3+1]=1;col[i*3+2]=.62;}
-    else if(t<.8){col[i*3]=0;col[i*3+1]=.83;col[i*3+2]=1;}
-    else{col[i*3]=.48;col[i*3+1]=.18;col[i*3+2]=1;}
-  }
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(pos,3));
-  geo.setAttribute('color',    new THREE.BufferAttribute(col,3));
-  const mat = new THREE.PointsMaterial({size:.75,vertexColors:true,transparent:true,opacity:.55,sizeAttenuation:true,blending:THREE.AdditiveBlending,depthWrite:false});
-  scene.add(new THREE.Points(geo, mat));
-
-  // GRID
-  const gm = new THREE.LineBasicMaterial({color:0x00ff9f,transparent:true,opacity:.04,blending:THREE.AdditiveBlending});
-  const grid = new THREE.Group();
-  for(let i=-22;i<=22;i++){
-    grid.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-220,i*8,0),new THREE.Vector3(220,i*8,0)]),gm));
-    grid.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(i*10,-180,0),new THREE.Vector3(i*10,180,0)]),gm));
-  }
-  grid.position.z = -40;
-  scene.add(grid);
-
-  // DATA STREAMS
-  const sm = new THREE.LineBasicMaterial({color:0x00d4ff,transparent:true,opacity:.12,blending:THREE.AdditiveBlending});
-  const streams = new THREE.Group();
-  for(let i=0;i<10;i++){
-    const pts=[], sx=(Math.random()-.5)*280;
-    for(let j=0;j<22;j++) pts.push(new THREE.Vector3(sx+(Math.random()-.5)*18,-110+j*10,(Math.random()-.5)*18));
-    streams.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),sm));
-  }
-  scene.add(streams);
-
-  // FLOATING HEXAGONS
-  const hexGeo = new THREE.BufferGeometry();
-  const hexPts = [];
-  for(let h=0;h<6;h++){
-    hexPts.push(new THREE.Vector3(Math.cos(h*Math.PI/3),Math.sin(h*Math.PI/3),0));
-    hexPts.push(new THREE.Vector3(Math.cos((h+1)*Math.PI/3),Math.sin((h+1)*Math.PI/3),0));
-  }
-  hexGeo.setFromPoints(hexPts);
-  const hexMat = new THREE.LineBasicMaterial({color:0x00ff9f,transparent:true,opacity:.06,blending:THREE.AdditiveBlending});
-  for(let i=0;i<12;i++){
-    const hex = new THREE.LineSegments(hexGeo, hexMat);
-    hex.position.set((Math.random()-.5)*200,(Math.random()-.5)*160,(Math.random()-.5)*80);
-    hex.scale.setScalar(Math.random()*8+4);
-    hex.rotation.z = Math.random()*Math.PI;
-    hex.userData = {vy:(Math.random()-.5)*.005,rz:(Math.random()-.5)*.003};
-    scene.add(hex);
-  }
-
-  let mx=0,my=0;
-  document.addEventListener('mousemove',e=>{mx=(e.clientX/innerWidth-.5)*2;my=(e.clientY/innerHeight-.5)*2;});
-
-  const pts3 = scene.children.filter(c=>c instanceof THREE.Points)[0];
-  let t=0;
-  function animate(){
-    requestAnimationFrame(animate);
-    t+=.004;
-    if(pts3){pts3.rotation.y=t*.07;pts3.rotation.x=t*.025;}
-    grid.position.y = Math.sin(t)*.3;
-    scene.children.forEach(c=>{
-      if(c.userData.vy){c.position.y+=c.userData.vy;c.rotation.z+=c.userData.rz;if(Math.abs(c.position.y)>90)c.userData.vy*=-1;}
+    function animate() {
+      requestAnimationFrame(animate);
+      scene.rotation.y += 0.001;
+      R.render(scene, camera);
+    }
+    animate();
+    addEventListener('resize', () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      R.setSize(innerWidth, innerHeight);
     });
-    camera.position.x += (mx*8-camera.position.x)*.025;
-    camera.position.y += (-my*4-camera.position.y)*.025;
-    camera.lookAt(0,0,0);
-    R.render(scene,camera);
-  }
-  animate();
+  })();
 
-  addEventListener('resize',()=>{
-    camera.aspect=innerWidth/innerHeight;
-    camera.updateProjectionMatrix();
-    R.setSize(innerWidth,innerHeight);
-  });
+  // Cursor
+  (function initCursor() {
+    const dot = document.getElementById('cdot'), ring = document.getElementById('cring');
+    let rx = 0, ry = 0, dx = 0, dy = 0;
+    document.addEventListener('mousemove', e => { dx = e.clientX; dy = e.clientY; if(dot){dot.style.left = dx + 'px'; dot.style.top = dy + 'px'; }});
+    document.addEventListener('mouseover', e => { if (e.target.matches('a,button,.sig-card')) ring.classList.add('big'); });
+    document.addEventListener('mouseout', e => { if (e.target.matches('a,button,.sig-card')) ring.classList.remove('big'); });
+    (function loop() { rx += (dx - rx) * 0.15; ry += (dy - ry) * 0.15; if(ring){ring.style.left = rx + 'px'; ring.style.top = ry + 'px';} requestAnimationFrame(loop); })();
+  })();
+
+  // GSAP Entrance
+  gsap.timeline({ delay: .5 })
+    .to('#h-badge', { opacity: 1, y: 0, duration: .8 })
+    .to('#h-orb', { opacity: 1, duration: 1 }, '-=.4')
+    .to('#h-h1', { opacity: 1, y: 0, duration: .8 }, '-=.5')
+    .to('#h-sub', { opacity: 1, y: 0, duration: .7 }, '-=.5')
+    .to('#h-metrics', { opacity: 1, y: 0, duration: .6 }, '-=.3');
+
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .05 });
+  document.querySelectorAll('.fade-up').forEach(el => io.observe(el));
 })();
 
-// ═══════════════════════════════════
-// CUSTOM CURSOR
-// ═══════════════════════════════════
-(function(){
-  const dot=document.getElementById('cdot'), ring=document.getElementById('cring');
-  let rx=0,ry=0,dx=0,dy=0;
-  document.addEventListener('mousemove',e=>{dx=e.clientX;dy=e.clientY;dot.style.left=dx+'px';dot.style.top=dy+'px';});
-  document.addEventListener('mouseover',e=>{if(e.target.matches('a,button,.sig-card,.feat-card,.price-card'))ring.classList.add('big');});
-  document.addEventListener('mouseout',e=>{if(e.target.matches('a,button,.sig-card,.feat-card,.price-card'))ring.classList.remove('big');});
-  (function loop(){rx+=(dx-rx)*.11;ry+=(dy-ry)*.11;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(loop);})();
-})();
-
-// ═══════════════════════════════════
-// GSAP ENTRANCE
-// ═══════════════════════════════════
-gsap.timeline({delay:.3})
-  .to('#h-badge',  {opacity:1,y:0,duration:.8,ease:'power3.out'})
-  .to('#h-orb',    {opacity:1,duration:1,ease:'power2.out'},'-=.4')
-  .to('#h-h1',     {opacity:1,y:0,duration:.8,ease:'power3.out'},'-=.5')
-  .to('#h-sub',    {opacity:1,y:0,duration:.7,ease:'power3.out'},'-=.5')
-  .to('#h-btns',   {opacity:1,y:0,duration:.6,ease:'power3.out'},'-=.4')
-  .to('#h-trust',  {opacity:1,y:0,duration:.5,ease:'power3.out'},'-=.3')
-  .to('#h-metrics',{opacity:1,y:0,duration:.6,ease:'power3.out'},'-=.3');
-
-// scroll fade
-const io = new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.08});
-document.querySelectorAll('.fade-up').forEach(el=>io.observe(el));
-
-// card tilt
-document.addEventListener('mousemove',e=>{
-  document.querySelectorAll('.sig-card').forEach(c=>{
-    const r=c.getBoundingClientRect();
-    c.style.setProperty('--mx',(50+((e.clientX-r.left-r.width/2)/r.width)*30)+'%');
-    c.style.setProperty('--my',(50+((e.clientY-r.top-r.height/2)/r.height)*30)+'%');
-  });
-});
-
-// ═══════════════════════════════════
-// REAL SUPABASE SYSTEM
-// ═══════════════════════════════════
-const SUPABASE_URL = 'https://hlfianhpyryrnnmxwlcy.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhsZmlhbmhweXJ5cm5ubXh3bGN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMTc5MjIsImV4cCI6MjA5MTg5MzkyMn0.SeCgt7JYkYpKmjWSAYBlkLOuE5cL7HkvvjD02WGk4Ik';
-
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// ==========================
-// FETCH
-// ==========================
-async function fetchSignals() {
-  const { data, error } = await supabaseClient
-    .from("signals")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error(error);
-    return [];
-  }
-
-  return data.map(s => ({
-    ...s,
-    direction: (s.action || 'LONG').toUpperCase(),
-    // Fallback for UI mapping
-    status: s.status === 'ACTIVE' ? 'ACTIVE' : 'CLOSED'
-  }));
-}
-
-function calcPnL(s){
-  if(s.pnl_pct != null) return Number(s.pnl_pct);
-  if(!s.entry_price || (!s.exit_price && !s.tp_price && !s.sl_price)) return 0;
-  const exit = s.exit_price || s.tp_price || s.sl_price;
-  const side = (s.action||'').toUpperCase();
-  if(side === 'LONG' || side === 'BUY') return ((exit - s.entry_price) / s.entry_price) * 100;
-  if(side === 'SHORT' || side === 'SELL') return ((s.entry_price - exit) / s.entry_price) * 100;
-  return 0;
-}
-
-function fmt(n){
-  if(n==null||n==='') return '—';
-  const v=Number(n);
-  return v>=1000?v.toLocaleString(undefined,{maximumFractionDigits:2}):v.toFixed(v<10?4:2);
-}
-
-function animNum(el,to,suf='',dec=0){
-  let from=0;const s=performance.now(),d=1400;
-  (function step(now){
-    const p=Math.min((now-s)/d,1),e=1-Math.pow(1-p,4),v=from+(to-from)*e;
-    el.textContent=(dec?v.toFixed(dec):Math.round(v))+suf;
-    if(p<1)requestAnimationFrame(step);
-  })(performance.now());
-}
-
-function buildTicker(data){
-  const t=document.getElementById('ticker');
-  if(!t) return;
-  const items=data.slice(0,8).map(s=>{
-    const d=(s.direction||'').toLowerCase();
-    const colorClass = (d==='long'||d==='buy')?'tl':'ts';
-    return `<div class="tick-item"><span>${s.symbol}</span><span class="tm">|</span><span class="${colorClass}">${s.direction}</span></div>`;
-  }).join('<span class="tm" style="color:rgba(255,255,255,.07)">———</span>');
-  t.innerHTML=items+items;
-}
-
-function renderStats(all,active,closed){
-  const win=closed.filter(s=>calcPnL(s)>0);
-  const wr=closed.length?(win.length/closed.length*100):0;
-  const pnl=closed.reduce((acc,s)=>acc+calcPnL(s),0);
-  
-  const mActive = document.getElementById('m-active');
-  const mWr = document.getElementById('m-wr');
-  const mPnl = document.getElementById('m-pnl');
-  const mTot = document.getElementById('m-tot');
-
-  if(mActive) animNum(mActive,active.length);
-  if(mWr && closed.length) animNum(mWr,wr,'%',1);
-  if(mPnl && closed.length){
-    mPnl.className='metric-v '+(pnl>=0?'g':'r');
-    animNum(mPnl,pnl,'%',2);
-  }
-  if(mTot) animNum(mTot,all.length);
-  
-  const slotsEl = document.getElementById('nav-slots');
-  if(slotsEl){
-    const slots=Math.max(2,Math.floor(Math.random()*6)+2);
-    slotsEl.textContent=slots+' SLOTS LEFT';
-  }
-}
-
-function renderActive(active){
-  const el=document.getElementById('act-grid');
-  const badge=document.getElementById('act-badge');
-  if(badge) badge.textContent=active.length;
-  if(!el) return;
-  if(!active.length){
-    el.innerHTML=`<div style="grid-column:1/-1"><div class="empty"><div class="empty-i">🔍</div><div class="empty-t">No active signals. Bot is scanning…</div></div></div>`;
-    return;
-  }
-  el.innerHTML=active.map((s,i)=>{
-    const d=(s.direction||'').toLowerCase();
-    const conf=Math.round((s.confidence||0)*100);
-    const dirClass = (d==='long'||d==='buy')?'long':'short';
-    return `<div class="sig-card ${dirClass}" style="animation:none">
-      <div class="card-top">
-        <div class="card-sym">${s.symbol||'—'}</div>
-        <div class="dir-tag ${dirClass}">${s.direction||'—'}</div>
-      </div>
-      <div class="price-grid">
-        <div class="pf"><label>Entry</label><div class="v en">${fmt(s.entry_price)}</div></div>
-        <div class="pf"><label>Stop Loss</label><div class="v sl">${fmt(s.sl_price)}</div></div>
-        <div class="pf"><label>Take Profit</label><div class="v tp">${fmt(s.tp_price)}</div></div>
-      </div>
-      <div class="conf-wrap">
-        <div class="conf-l"><span>AI Confidence</span><span>${conf}%</span></div>
-        <div class="conf-bar"><div class="conf-fill" data-c="${conf}"></div></div>
-      </div>
-      <div class="card-foot">
-        <div class="tf-tag">${s.timeframe||'—'}</div>
-      </div>
-    </div>`;
-  }).join('');
-  setTimeout(()=>document.querySelectorAll('.conf-fill[data-c]').forEach(b=>b.style.width=b.dataset.c+'%'),80);
-}
-
-function renderHistory(active, closed){
-  const tb=document.getElementById('hist-body');
-  const badge=document.getElementById('hist-badge');
-  const all = [...active, ...closed];
-  if(badge) badge.textContent=all.length;
-  if(!tb) return;
-  if(!all.length){
-    tb.innerHTML=`<tr><td colspan="6"><div class="empty"><div class="empty-i">📭</div><div class="empty-t">No trades to display.</div></div></td></tr>`;
-    return;
-  }
-  tb.innerHTML=all.slice(0,30).map(s=>{
-    const d=(s.direction||'').toLowerCase();
-    const isLive = s.status === 'ACTIVE';
-    const stateStr = isLive ? 'Live' : 'Closed';
-    const sellPrice = isLive ? '---' : fmt(s.exit_price || s.tp_price || s.sl_price);
-    const pnl = calcPnL(s);
-    const ph = isLive ? '---' : `<span class="${pnl>=0?'ppos':'pneg'}">${pnl>=0?'+':''}${pnl.toFixed(2)}%</span>`;
-    const sideClass = (d==='long'||d==='buy')?'long':'short';
-    
-    return `<tr>
-      <td style="font-family:var(--fh);font-size:.82rem;font-weight:700;letter-spacing:.05em">${s.symbol||'—'}</td>
-      <td><span class="pill ${sideClass}">${s.direction||'—'}</span></td>
-      <td><span class="pill ${isLive ? 'tp' : 'sl'}">${stateStr}</span></td>
-      <td>${fmt(s.entry_price)}</td>
-      <td>${sellPrice}</td>
-      <td>${ph}</td>
-    </tr>`;
-  }).join('');
-}
-
-async function loadData() {
-  try {
-    const data = await fetchSignals();
-    const active = data.filter(s => s.status === "ACTIVE");
-    const closed = data.filter(s => s.status !== "ACTIVE");
-
-    renderStats(data, active, closed);
-    renderActive(active);
-    renderHistory(active, closed);
-    buildTicker(data);
-  } catch (e) {
-    console.error(e);
-  }
-}
-
-function startRealtime() {
-  supabaseClient
-    .channel("signals-live")
-    .on(
-      "postgres_changes",
-      { event: "*", schema: "public", table: "signals" },
-      () => loadData()
-    )
-    .subscribe();
-}
-
-loadData();
-startRealtime();
-
-// ═══════════════════════════════════
-// LOG TERMINAL SIMULATION
-// ═══════════════════════════════════
-(function(){
-  const log = document.getElementById('term-log');
-  if(!log) return;
-  const add = (msg, type='') => {
-    const ts = new Date().toLocaleTimeString('en-GB', {hour12:false});
-    const line = document.createElement('div');
-    line.className = 'term-line';
-    line.innerHTML = `<span class="term-ts">[${ts}]</span><span class="term-msg ${type}">${msg}</span>`;
-    log.appendChild(line);
-    log.scrollTop = log.scrollHeight;
-    if(log.children.length > 50) log.removeChild(log.children[1]); 
-  };
-  
-  const msgs = [
-    {m:'Scanning Binance Futures orderbook...', t:'sys'},
-    {m:'Sentiment analysis: Bullish bias detected on X (Twitter).', t:'sys'},
-    {m:'Checking SME indicators: Liquidity sweep found at 65,200.', t:'sys'},
-    {m:'Signal Confluence found for BTC/USDT (1h).', t:'trade'},
-    {m:'Executing paper trade: BTC/USDT LONG @ Market.', t:'trade'},
-    {m:'Updating ATR trailing stops for all positions.', t:'sys'},
-    {m:'Rate limit buffer: Sleeping for 200ms.', t:'warn'},
-    {m:'Sentiment shift: ETH/USDT social volume increasing.', t:'sys'}
-  ];
-
-  setInterval(() => {
-    if(Math.random() > 0.7) {
-      const item = msgs[Math.floor(Math.random()*msgs.length)];
-      add(item.m, item.t);
-    }
-  }, 4000);
-})();
 </script>
 </body>
 </html>
