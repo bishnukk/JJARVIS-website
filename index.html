@@ -579,36 +579,67 @@ let chartInstance = null;
 
 async function fetchSignals() {
   let allData = [];
-  let from = 0;
-  const step = 1000;
-  let hasMore = true;
+  
+  logToTerminal("SYNCING DATASTREAMS...", "sys");
 
-  logToTerminal("FETCHING ARCHIVED DATA FROM SUPABASE...", "sys");
-
-  while (hasMore) {
-    const { data, error } = await supabaseClient
-      .from("signals")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .range(from, from + step - 1);
-
-    if (error) {
-      logToTerminal(`Supabase Error: ${error.message}`, 'warn');
-      console.error(error);
-      return allData;
+  // Fetch from 'signals' table
+  try {
+    let from = 0;
+    const step = 1000;
+    let hasMore = true;
+    while (hasMore) {
+      const { data, error } = await supabaseClient
+        .from("signals")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .range(from, from + step - 1);
+      if (error) throw error;
+      if (data && data.length > 0) {
+        allData = [...allData, ...data];
+        from += step;
+        if (data.length < step) hasMore = false;
+      } else {
+        hasMore = false;
+      }
     }
-
-    if (data && data.length > 0) {
-      allData = [...allData, ...data];
-      from += step;
-      if (data.length < step) hasMore = false;
-    } else {
-      hasMore = false;
-    }
+  } catch (e) {
+    logToTerminal(`Signals Fetch Error: ${e.message}`, 'warn');
   }
 
-  logToTerminal(`SYNCED ${allData.length} TOTAL SIGNALS.`, "sys");
-  return allData;
+  // Fetch from 'orders' table (Unified Legacy & New)
+  try {
+    const { data: orders, error: oError } = await supabaseClient
+      .from("orders")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (!oError && orders) {
+      const mappedOrders = orders.map(o => ({
+        id: o.id,
+        symbol: o.symbol || o.jr_pair || '—',
+        action: (o.side || o.jr_order_side || '').toUpperCase(),
+        entry_price: o.average || o.price || 0,
+        exit_price: o.exit_price || null,
+        sl_price: o.stop_price || 0,
+        tp_price: o.tp_price || 0,
+        confidence: o.confidence || 0,
+        timeframe: o.timeframe || '—',
+        created_at: o.created_at || o.order_date,
+        closed_at: o.closed_at || o.order_filled_date,
+        pnl_pct: o.pnl_pct || null
+      }));
+      allData = [...allData, ...mappedOrders];
+    }
+  } catch (e) {
+    logToTerminal(`Orders Fetch Error: ${e.message}`, 'warn');
+  }
+
+  // Deduplicate and sort
+  const unique = Array.from(new Map(allData.map(item => [item.id, item])).values());
+  unique.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+  logToTerminal(`TOTAL DATA SYNCED: ${unique.length} RECORDS.`, "sys");
+  return unique;
 }
 
 function calcPnL(s) {
@@ -712,11 +743,20 @@ function renderHistory() {
 }
 
 function startRealtime() {
+  // Listen to 'signals'
   supabaseClient
     .channel("signals-realtime")
     .on("postgres_changes", { event: "*", schema: "public", table: "signals" }, (payload) => {
-      const { eventType, new: newRow, old: oldRow } = payload;
-      logToTerminal(`DB EVENT: ${eventType} on ${newRow?.symbol || oldRow?.symbol || 'ID:' + (newRow?.id || oldRow?.id)}`, 'trade');
+      logToTerminal(`DB EVENT (SIGNALS): ${payload.eventType}`, 'trade');
+      refreshAll();
+    })
+    .subscribe();
+
+  // Listen to 'orders'
+  supabaseClient
+    .channel("orders-realtime")
+    .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, (payload) => {
+      logToTerminal(`DB EVENT (ORDERS): ${payload.eventType}`, 'trade');
       refreshAll();
     })
     .subscribe();
