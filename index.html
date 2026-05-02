@@ -588,7 +588,24 @@ async function fetchSignals() {
       .from("signals")
       .select("*")
       .order("created_at", { ascending: false });
-    if (!error && data) allData = [...allData, ...data];
+    
+    if (!error && data) {
+      const mappedSignals = data.map(s => ({
+        ...s,
+        id: s.id,
+        symbol: s.symbol || '—',
+        action: (s.action || '').toUpperCase(),
+        entry_price: s.entry_price || s.price || 0,
+        exit_price: s.exit_price || null,
+        sl_price: s.sl_price || s.sl || s.stop_loss || s.stop_price || 0,
+        tp_price: s.tp_price || s.tp || s.take_profit || 0,
+        confidence: s.confidence || 0,
+        timeframe: s.timeframe || '—',
+        created_at: s.created_at,
+        pnl_pct: s.pnl_pct || null
+      }));
+      allData = [...allData, ...mappedSignals];
+    }
   } catch (e) { console.error(e); }
 
   // 2. Fetch from 'orders' table (Unified Legacy & New)
@@ -605,8 +622,8 @@ async function fetchSignals() {
         action: (o.side || o.jr_order_side || '').toUpperCase(),
         entry_price: o.average || o.price || o.jr_price || 0,
         exit_price: o.exit_price || null,
-        sl_price: o.stop_price || 0,
-        tp_price: o.tp_price || 0,
+        sl_price: o.sl_price || o.sl || o.stop_loss || o.stop_price || o.jr_sl || 0,
+        tp_price: o.tp_price || o.tp || o.take_profit || o.jr_tp || 0,
         confidence: o.confidence || 0,
         timeframe: o.timeframe || '—',
         created_at: o.order_date || o.created_at,
