@@ -579,7 +579,6 @@ let chartInstance = null;
 
 async function fetchSignals() {
   let allData = [];
-  
   logToTerminal("SYNCING DATASTREAMS...", "sys");
 
   // 1. Fetch from 'signals' table
@@ -608,33 +607,54 @@ async function fetchSignals() {
     }
   } catch (e) { console.error(e); }
 
-  // 2. Fetch from 'orders' table (Unified Legacy & New)
+  // 2. Fetch from 'orders' table & Group into Complete Trades
   try {
     const { data: orders, error: oError } = await supabaseClient
       .from("orders")
       .select("*")
-      .order("order_date", { ascending: false });
+      .order("order_date", { ascending: true }); // Ascending to find entry first
 
     if (!oError && orders) {
-      const mappedOrders = orders.map(o => ({
-        id: o.id,
-        symbol: o.symbol || o.jr_pair || '—',
-        action: (o.side || o.jr_order_side || '').toUpperCase(),
-        entry_price: o.average || o.price || o.jr_price || 0,
-        exit_price: o.exit_price || null,
-        sl_price: o.sl_price || o.sl || o.stop_loss || o.stop_price || o.jr_sl || 0,
-        tp_price: o.tp_price || o.tp || o.take_profit || o.jr_tp || 0,
-        confidence: o.confidence || 0,
-        timeframe: o.timeframe || '—',
-        created_at: o.order_date || o.created_at,
-        closed_at: o.closed_at || o.order_filled_date,
-        pnl_pct: o.pnl_pct || null
-      }));
-      allData = [...allData, ...mappedOrders];
+      const tradeGroups = {};
+      orders.forEach(o => {
+        const tid = o.jr_trade_id || o.id;
+        if (!tradeGroups[tid]) {
+          tradeGroups[tid] = {
+            id: tid,
+            symbol: o.symbol || o.jr_pair || '—',
+            action: (o.side || o.jr_order_side || '').toUpperCase(),
+            entry_price: o.average || o.price || o.jr_price || 0,
+            exit_price: null,
+            sl_price: o.sl_price || o.sl || o.stop_loss || o.stop_price || o.jr_sl || 0,
+            tp_price: o.tp_price || o.tp || o.take_profit || o.jr_tp || 0,
+            confidence: o.confidence || 0,
+            timeframe: o.timeframe || '—',
+            created_at: o.order_date || o.created_at,
+            closed_at: null,
+            pnl_pct: o.pnl_pct || null
+          };
+        } else {
+          // If we already have this trade, this might be the exit order
+          const t = tradeGroups[tid];
+          const currentAction = t.action;
+          const newAction = (o.side || o.jr_order_side || '').toUpperCase();
+          
+          // If the new order is the opposite side or the trade is marked as closed, it's an exit
+          if ((newAction !== currentAction && newAction !== '') || o.jr_is_open === false || o.status === 'closed') {
+            t.exit_price = o.average || o.price || o.jr_price;
+            t.closed_at = o.order_filled_date || o.closed_at || o.order_date;
+            if (o.pnl_pct) t.pnl_pct = o.pnl_pct;
+          }
+          // Also update SL/TP if the new order has them
+          if (o.stop_price || o.jr_sl) t.sl_price = o.stop_price || o.jr_sl;
+          if (o.tp_price || o.jr_tp) t.tp_price = o.tp_price || o.jr_tp;
+        }
+      });
+      allData = [...allData, ...Object.values(tradeGroups)];
     }
-  } catch (e) { console.error(e); }
+  } catch (e) { console.error("Orders Grouping Error:", e); }
 
-  // 3. Deduplicate and sort
+  // 3. Deduplicate and Sort
   const unique = Array.from(new Map(allData.map(item => [item.id, item])).values());
   unique.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 
