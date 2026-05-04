@@ -120,12 +120,6 @@ nav {
   background: #33ffb8;
 }
 
-/* ── CONFIDENCE BAR ── */
-.conf-wrap{margin-top:20px;}
-.conf-l{display:flex;justify-content:space-between;font-size:.75rem;color:var(--muted);margin-bottom:8px; font-weight: 500;}
-.conf-bar{height:6px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden;}
-.conf-fill{height:100%;background:linear-gradient(90deg, var(--primary), var(--cyan));width:0;transition:width 1.2s cubic-bezier(.23,1,.32,1);border-radius:3px;}
-
 /* ── NEWS SECTION ── */
 .news-grid {
   display: grid;
@@ -933,7 +927,7 @@ function renderActive() {
   el.innerHTML = active.map(s => {
     const action = (s.action || '').toUpperCase();
     const dirClass = (action === 'BUY' || action === 'LONG') ? 'long' : 'short';
-    const conf = Math.round((s.confidence || 0) * 100);
+
     const uPnL = s.unrealized_pnl || 0;
     
     return `<div class="sig-card ${dirClass}">
@@ -946,10 +940,7 @@ function renderActive() {
         <div class="pf"><label>Live</label><div class="v" style="color:var(--cyan)">${s.current_price ? fmt(s.current_price) : 'FETCHING...'}</div></div>
         <div class="pf"><label>Live PnL</label><div class="v ${uPnL >= 0 ? 'ppos' : 'pneg'}">${uPnL >= 0 ? '+' : ''}${uPnL.toFixed(2)}%</div></div>
       </div>
-      <div class="conf-wrap">
-        <div class="conf-l"><span>Confidence</span><span>${conf}%</span></div>
-        <div class="conf-bar"><div class="conf-fill" style="width:${conf}%"></div></div>
-      </div>
+
       <div class="card-foot">
         <div class="tf-tag">${s.timeframe || '—'}</div>
       </div>
