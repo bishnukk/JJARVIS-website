@@ -123,7 +123,7 @@ nav {
 /* ── NEWS SECTION ── */
 .news-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 24px;
 }
 .news-card {
@@ -432,6 +432,80 @@ footer{position:relative;z-index:2;border-top:1px solid var(--border);padding:48
   transform: translateY(-2px);
   color: var(--primary);
 }
+
+/* ── MOBILE OPTIMIZATIONS ── */
+@media (max-width: 768px) {
+  :root { --radius: 16px; }
+  .page { padding: 0 20px; }
+  .section { padding: 60px 0; }
+  .hologram-panel { padding: 32px 20px; border-radius: 24px; }
+  
+  nav { height: 64px; }
+  .nav-slots { display: none; }
+  .logo { font-size: 1.1rem; }
+  .logo-box { width: 32px; height: 32px; font-size: 1rem; border-radius: 8px; }
+  .live-pill { padding: 6px 12px; font-size: 0.65rem; }
+
+  .hero { padding-top: 100px; padding-bottom: 100px; }
+  .hero-badge { margin-bottom: 24px; font-size: 0.7rem; padding: 6px 14px; }
+  .hero h1 { font-size: clamp(2.5rem, 10vw, 3.5rem); margin-bottom: 20px; }
+  .hero-sub { font-size: 1rem; margin-bottom: 40px; }
+  
+  .orb-wrap { width: 220px; height: 220px; margin-bottom: 32px; }
+  .orb-r3, .orb-r2, .orb-moons { top: -45px; left: -45px; width: 310px; height: 310px; }
+  .orb-core { inset: 45px; }
+
+  .metrics-row { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .metric { padding: 20px 16px; }
+  .metric-v { font-size: 1.8rem; }
+
+  .cards-grid { grid-template-columns: 1fr; }
+  .sig-card { padding: 24px; }
+  .card-sym { font-size: 1.2rem; }
+  .price-grid { grid-template-columns: 1fr; gap: 8px; }
+  .pf { padding: 12px; }
+
+  .sec-head { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .sec-title { font-size: 1.5rem; }
+  .cnt-badge { margin-left: 8px; font-size: 0.8rem; }
+
+  .page-frame { inset: 12px; }
+  .cf { width: 20px; height: 20px; }
+  
+  .mobile-hint { display: block !important; }
+
+  /* Table scroll hint */
+  .table-wrap {
+    position: relative;
+    background: linear-gradient(to right, var(--panel-bg) 30%, rgba(20,22,24,0)),
+                linear-gradient(to right, rgba(20,22,24,0), var(--panel-bg) 70%) 0 100%,
+                radial-gradient(farthest-side at 0 50%, rgba(0,0,0,.2), rgba(0,0,0,0)),
+                radial-gradient(farthest-side at 100% 50%, rgba(0,0,0,.2), rgba(0,0,0,0)) 0 100%;
+    background-repeat: no-repeat;
+    background-size: 40px 100%, 40px 100%, 14px 100%, 14px 100%;
+    background-attachment: local, local, scroll, scroll;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero { padding-bottom: 120px; }
+  .hero h1 { font-size: 2.2rem; }
+  .metrics-row { grid-template-columns: 1fr; }
+  .metric-v { font-size: 2rem; }
+  .trust-strip { gap: 8px; }
+  .trust-item { font-size: 0.75rem; padding: 6px 12px; }
+  
+  .boot-logo { font-size: 1.8rem; }
+  .boot-bar { width: 200px; }
+  
+  .table-wrap td, .table-wrap th { padding: 12px; font-size: 0.8rem; }
+  .pill { padding: 6px 12px; font-size: 0.7rem; }
+  
+  footer { padding-bottom: 80px; } /* Space for ticker */
+}
+
+main { padding-bottom: 60px; } /* Global space for ticker */
+
 </style>
 
 
@@ -687,6 +761,7 @@ footer{position:relative;z-index:2;border-top:1px solid var(--border);padding:48
     <div class="sec-title">📉 Trade Monitor <span class="cnt-badge" id="hist-badge">0</span></div>
   </div>
   <div class="table-wrap">
+    <div class="mobile-hint" style="display:none; text-align:center; font-size:0.7rem; color:var(--primary); padding:8px; font-family:var(--mono);">[ SWIPE TO SCROLL ]</div>
     <table>
       <thead><tr>
         <th>Symbol</th><th>Action</th><th>Entry Date/Price</th><th>Exit Date/Price</th><th>PnL %</th>
