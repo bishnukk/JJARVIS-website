@@ -227,6 +227,10 @@
                 const pastTrades = limitedData.filter(t => t.exit_price || t.pnl_pct != null || t.status === 'closed');
 
                 // Render
+                const syncBtn = document.querySelector('button[onclick="fetchData()"]');
+                syncBtn.innerText = 'Sync Engine';
+                syncBtn.disabled = false;
+
                 document.getElementById('live-count').innerText = liveSignals.length;
                 liveGrid.innerHTML = liveSignals.length > 0 ? liveSignals.map(sig => `
                     <div class="glass-card p-6 border-l-4 border-blue-600">
@@ -247,32 +251,37 @@
 
                 pastBody.innerHTML = pastTrades.length > 0 ? pastTrades.map(t => {
                     const pnl = calculatePnL(t);
+                    const pnlFormatted = Math.abs(pnl) < 0.01 && pnl !== 0 ? pnl.toFixed(4) : pnl.toFixed(2);
                     return `
                         <tr class="hover:bg-white/[0.02] transition-colors">
                             <td class="px-6 py-5 font-bold text-blue-500">${t.symbol}</td>
                             <td class="px-6 py-5"><span class="px-2 py-0.5 rounded text-[10px] font-black bg-white/5">${t.action}</span></td>
                             <td class="px-6 py-5 mono text-xs text-gray-500">$${formatPrice(t.entry_price)}</td>
                             <td class="px-6 py-5 mono text-xs text-gray-300">$${formatPrice(t.exit_price || 0)}</td>
-                            <td class="px-6 py-5 mono text-sm font-bold ${pnl >= 0 ? 'text-green-500' : 'text-red-500'}">${pnl > 0 ? '+' : ''}${pnl.toFixed(2)}%</td>
+                            <td class="px-6 py-5 mono text-sm font-bold ${pnl >= 0 ? 'text-green-500' : 'text-red-500'}">${pnl > 0 ? '+' : ''}${pnlFormatted}%</td>
                             <td class="px-6 py-5 text-[10px] text-gray-600 font-bold uppercase">${new Date(t.created_at).toLocaleDateString([], {month:'short', day:'numeric'})}</td>
                         </tr>
                     `;
                 }).join('') : '<tr><td colspan="6" class="px-6 py-12 text-center text-gray-500 italic">No historical executions detected.</td></tr>';
 
                 document.getElementById('stat-total').innerText = unique.length;
-                document.getElementById('stat-realized').innerText = totalRealized.toFixed(2) + '%';
+                document.getElementById('stat-realized').innerText = (totalRealized >= 0 ? '+' : '') + totalRealized.toFixed(2) + '%';
                 document.getElementById('stat-realized').className = `text-3xl font-black ${totalRealized >= 0 ? 'text-green-500' : 'text-red-500'}`;
-                document.getElementById('stat-unrealized').innerText = totalUnrealized.toFixed(2) + '%';
-                document.getElementById('stat-daily').innerText = daily.toFixed(2) + '%';
+                document.getElementById('stat-unrealized').innerText = (totalUnrealized >= 0 ? '+' : '') + totalUnrealized.toFixed(2) + '%';
+                document.getElementById('stat-daily').innerText = (daily >= 0 ? '+' : '') + daily.toFixed(2) + '%';
                 
                 errorBox.classList.add('hidden');
 
             } catch (err) {
                 console.error(err);
+                const syncBtn = document.querySelector('button[onclick="fetchData()"]');
+                syncBtn.innerText = 'Sync Engine';
+                syncBtn.disabled = false;
                 errorBox.innerText = `System Alert: ${err.message || 'Datalink Interrupt'}`;
                 errorBox.classList.remove('hidden');
             }
         }
+
 
         fetchData();
         setInterval(fetchData, 60000);
