@@ -35,11 +35,6 @@
                         <span class="text-[10px] font-bold text-blue-500 uppercase tracking-[0.3em]">Neural Core</span>
                     </div>
                 </div>
-                <div class="hidden md:flex items-center gap-8 text-[11px] font-bold uppercase tracking-widest text-gray-500">
-                    <a href="#" class="text-white border-b-2 border-blue-500 pb-1">Dashboard</a>
-                    <a href="#" class="hover:text-white transition-colors">Signals</a>
-                    <a href="#" class="hover:text-white transition-colors">Analytics</a>
-                </div>
             </div>
             <div class="flex items-center gap-6">
                 <div id="status" class="hidden sm:flex items-center text-[9px] font-black text-blue-400 uppercase tracking-[0.2em] bg-blue-500/5 px-4 py-2 rounded-lg border border-blue-500/10">
@@ -75,6 +70,8 @@
             </div>
         </div>
 
+        <div id="error-box" class="hidden bg-red-500/10 border border-red-500/20 text-red-400 text-xs p-4 rounded-xl mb-8"></div>
+
         <!-- Live Signals -->
         <section class="mb-16">
             <div class="flex items-center gap-3 mb-8">
@@ -90,7 +87,7 @@
         <section>
             <div class="flex items-center gap-3 mb-8">
                 <h2 class="text-xl font-bold">Past Trades</h2>
-                <p class="text-gray-500 text-sm">(Last 30 entries)</p>
+                <p class="text-gray-500 text-sm">(Buffered Execution Log)</p>
             </div>
 
             <div class="glass-card overflow-hidden">
@@ -108,7 +105,7 @@
                         </thead>
                         <tbody id="past-body" class="divide-y divide-white/5">
                             <tr>
-                                <td colspan="6" class="px-6 py-12 text-center text-gray-500 italic">No past trades detected.</td>
+                                <td colspan="6" class="px-6 py-12 text-center text-gray-500 italic">No historical data detected.</td>
                             </tr>
                         </tbody>
                     </table>
@@ -125,11 +122,14 @@
         async function fetchData() {
             const liveGrid = document.getElementById('live-grid');
             const pastBody = document.getElementById('past-body');
+            const errorBox = document.getElementById('error-box');
             let allData = [];
 
             try {
                 // 1. Fetch from signals
-                const { data: signals } = await supabaseClient.from('signals').select('*').order('created_at', { ascending: false });
+                const { data: signals, error: sErr } = await supabaseClient.from('signals').select('*').order('created_at', { ascending: false });
+                if (sErr) throw sErr;
+                
                 if (signals) {
                     allData = signals.map(s => ({
                         id: s.id,
@@ -139,14 +139,15 @@
                         exit_price: s.exit_price || null,
                         tp_price: s.tp_price || s.tp || s.take_profit || 0,
                         confidence: s.confidence || 0,
-                        timeframe: s.timeframe || '—',
                         created_at: s.created_at,
                         pnl_pct: s.pnl_pct || null
                     }));
                 }
 
-                // 2. Fetch from orders & group
-                const { data: orders } = await supabaseClient.from('orders').select('*').order('order_date', { ascending: true });
+                // 2. Fetch from orders
+                const { data: orders, error: oErr } = await supabaseClient.from('orders').select('*').order('order_date', { ascending: true });
+                if (oErr) console.warn("Orders fetch failed:", oErr);
+                
                 if (orders) {
                     const tradeGroups = {};
                     orders.forEach(o => {
@@ -163,7 +164,8 @@
                             };
                         } else {
                             const t = tradeGroups[tid];
-                            if (o.jr_is_open === false || o.status === 'closed' || (o.side && o.side.toUpperCase() !== t.action)) {
+                            // If order side is different from entry, or it's explicitly closed
+                            if (o.side && o.side.toUpperCase() !== t.action || o.status === 'closed' || o.jr_is_open === false) {
                                 t.exit_price = o.average || o.price || o.jr_price;
                                 if (o.pnl_pct) t.pnl_pct = o.pnl_pct;
                             }
@@ -172,13 +174,14 @@
                     allData = [...allData, ...Object.values(tradeGroups)];
                 }
 
-                // Deduplicate & Sort
+                // 3. Process
                 const unique = Array.from(new Map(allData.map(item => [item.id, item])).values());
                 unique.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
                 
-                // Split
-                const liveSignals = unique.filter(t => !t.exit_price && t.pnl_pct == null).slice(0, 10);
-                const pastTrades = unique.filter(t => t.exit_price || t.pnl_pct != null).slice(0, 30);
+                // If it's a "signal" and has no exit price, it's live.
+                // If it's an "order" and has an exit price, it's past.
+                const liveSignals = unique.filter(t => !t.exit_price && t.pnl_pct == null).slice(0, 15);
+                const pastTrades = unique.filter(t => t.exit_price || t.pnl_pct != null).slice(0, 50);
 
                 // Stats
                 let totalRealized = 0;
@@ -196,7 +199,7 @@
                     }
                 });
 
-                // Update UI
+                // Render
                 document.getElementById('live-count').innerText = liveSignals.length;
                 liveGrid.innerHTML = liveSignals.length > 0 ? liveSignals.map(sig => `
                     <div class="glass-card p-6 border-l-4 border-blue-600">
@@ -213,30 +216,35 @@
                             <div class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-ping"></div>
                         </div>
                     </div>
-                `).join('') : '<p class="col-span-full text-center py-10 text-gray-500 italic">No active signals.</p>';
+                `).join('') : '<p class="col-span-full text-center py-10 text-gray-500 italic">Searching neural stream...</p>';
 
                 pastBody.innerHTML = pastTrades.length > 0 ? pastTrades.map(t => {
                     const pnl = parseFloat(t.pnl_pct || 0);
-                    const pnlColor = pnl >= 0 ? 'text-green-500' : 'text-red-500';
                     return `
                         <tr class="hover:bg-white/[0.02] transition-colors">
-                            <td class="px-6 py-5 font-bold">${t.symbol}</td>
-                            <td class="px-6 py-5"><span class="px-2 py-0.5 rounded text-[10px] font-black bg-white/5">${t.action}</span></td>
-                            <td class="px-6 py-5 mono text-xs">$${parseFloat(t.entry_price).toLocaleString()}</td>
-                            <td class="px-6 py-5 mono text-xs text-gray-600">$${parseFloat(t.exit_price || 0).toLocaleString()}</td>
-                            <td class="px-6 py-5 mono text-sm font-bold ${pnlColor}">${pnl > 0 ? '+' : ''}${pnl.toFixed(2)}%</td>
-                            <td class="px-6 py-5 text-[10px] text-gray-600 uppercase">${new Date(t.created_at).toLocaleDateString()}</td>
+                            <td class="px-6 py-5 font-bold text-blue-100">${t.symbol}</td>
+                            <td class="px-6 py-5"><span class="px-2 py-0.5 rounded text-[10px] font-black bg-white/10 text-gray-300">${t.action}</span></td>
+                            <td class="px-6 py-5 mono text-xs text-gray-400">$${parseFloat(t.entry_price).toLocaleString()}</td>
+                            <td class="px-6 py-5 mono text-xs text-gray-300 font-bold">$${parseFloat(t.exit_price || 0).toLocaleString()}</td>
+                            <td class="px-6 py-5 mono text-sm font-bold ${pnl >= 0 ? 'text-green-500' : 'text-red-500'}">${pnl > 0 ? '+' : ''}${pnl.toFixed(2)}%</td>
+                            <td class="px-6 py-5 text-[10px] text-gray-500 uppercase">${new Date(t.created_at).toLocaleDateString()}</td>
                         </tr>
                     `;
-                }).join('') : '<tr><td colspan="6" class="px-6 py-12 text-center text-gray-500 italic">No historical data.</td></tr>';
+                }).join('') : '<tr><td colspan="6" class="px-6 py-12 text-center text-gray-500 italic">No historical trades found.</td></tr>';
 
                 document.getElementById('stat-total').innerText = unique.length;
                 document.getElementById('stat-realized').innerText = totalRealized.toFixed(2) + '%';
                 document.getElementById('stat-realized').className = `text-3xl font-black ${totalRealized >= 0 ? 'text-green-500' : 'text-red-500'}`;
                 document.getElementById('stat-unrealized').innerText = totalUnrealized.toFixed(2) + '%';
                 document.getElementById('stat-daily').innerText = daily.toFixed(2) + '%';
+                
+                errorBox.classList.add('hidden');
 
-            } catch (err) { console.error(err); }
+            } catch (err) {
+                console.error(err);
+                errorBox.innerText = `Data link interrupted: ${err.message || 'Unknown error'}`;
+                errorBox.classList.remove('hidden');
+            }
         }
 
         fetchData();
