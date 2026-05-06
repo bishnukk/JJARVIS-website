@@ -119,6 +119,23 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhsZmlhbmhweXJ5cm5ubXh3bGN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMTc5MjIsImV4cCI6MjA5MTg5MzkyMn0.SeCgt7JYkYpKmjWSAYBlkLOuE5cL7HkvvjD02WGk4Ik';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        function calculatePnL(t) {
+            if (t.pnl_pct !== null && t.pnl_pct !== undefined && t.pnl_pct !== 0) return parseFloat(t.pnl_pct);
+            if (!t.entry_price || !t.exit_price || t.entry_price === 0) return 0;
+            
+            const entry = parseFloat(t.entry_price);
+            const exit = parseFloat(t.exit_price);
+            
+            // Long: (Exit - Entry) / Entry
+            // Short: (Entry - Exit) / Entry
+            if (t.action === 'BUY' || t.side === 'buy') {
+                return ((exit - entry) / entry) * 100;
+            } else if (t.action === 'SELL' || t.side === 'sell') {
+                return ((entry - exit) / entry) * 100;
+            }
+            return 0;
+        }
+
         async function fetchData() {
             const liveGrid = document.getElementById('live-grid');
             const pastBody = document.getElementById('past-body');
@@ -127,7 +144,9 @@
 
             try {
                 // 1. Fetch from signals
-                const { data: signals } = await supabaseClient.from('signals').select('*').order('created_at', { ascending: false });
+                const { data: signals, error: sErr } = await supabaseClient.from('signals').select('*').order('created_at', { ascending: false });
+                if (sErr) throw sErr;
+                
                 if (signals) {
                     allData = signals.map(s => ({
                         id: s.id,
@@ -144,7 +163,9 @@
                 }
 
                 // 2. Fetch from orders
-                const { data: orders } = await supabaseClient.from('orders').select('*').order('order_date', { ascending: true });
+                const { data: orders, error: oErr } = await supabaseClient.from('orders').select('*').order('order_date', { ascending: true });
+                if (oErr) console.warn("Orders fetch failed:", oErr);
+                
                 if (orders) {
                     const tradeGroups = {};
                     orders.forEach(o => {
@@ -191,7 +212,7 @@
                 const today = new Date().toISOString().split('T')[0];
 
                 limitedData.forEach(t => {
-                    const pnl = parseFloat(t.pnl_pct || 0);
+                    const pnl = calculatePnL(t);
                     if (t.exit_price || t.pnl_pct != null || t.status === 'closed') {
                         totalRealized += pnl;
                         if (new Date(t.created_at).toISOString().split('T')[0] === today) daily += pnl;
@@ -220,7 +241,7 @@
                 `).join('') : '<p class="col-span-full text-center py-10 text-gray-500 italic">Neural sensors active. Scanning...</p>';
 
                 pastBody.innerHTML = pastTrades.length > 0 ? pastTrades.map(t => {
-                    const pnl = parseFloat(t.pnl_pct || 0);
+                    const pnl = calculatePnL(t);
                     return `
                         <tr class="hover:bg-white/[0.02] transition-colors">
                             <td class="px-6 py-5 font-bold text-blue-500">${t.symbol}</td>
