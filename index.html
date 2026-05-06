@@ -1,1555 +1,237 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>HelioVeda AI | Enlightened Trading Intelligence</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>"/>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.min.js"></script>
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-
-
-
-<style>
-/* ── TOKENS ── */
-:root {
-  --bg: #0A0A0A;
-  --panel-bg: rgba(20, 22, 24, 0.6);
-  --border: rgba(255, 255, 255, 0.08);
-  --muted: #8E8E93;
-  --text: #FFFFFF;
-  --primary: #00FFA3;
-  --primary-glow: rgba(0, 255, 163, 0.2);
-  --primary-dark: #003322;
-  --cyan: #00E5FF;
-  --green: #00FFA3; /* Buy */
-  --red: #FF3366; /* Sell */
-  --fh: 'Plus Jakarta Sans', sans-serif;
-  --fb: 'Inter', sans-serif;
-  --mono: 'Space Mono', monospace;
-  --radius: 20px;
-}
-
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--fb);
-  font-size: 16px;
-  overflow-x: hidden;
-}
-
-/* ── CANVAS ── */
-#bg-canvas {
-  position:fixed;inset:0;z-index:0;pointer-events:none;
-  width:100%;height:100%;
-}
-
-/* ── OVERLAYS ── */
-body::before {
-  content:'';position:fixed;inset:0;z-index:1;pointer-events:none;
-  background:radial-gradient(ellipse at top center, var(--primary-glow) 0%, transparent 60%);
-  opacity: 0.5;
-}
-
-/* ── NAV ── */
-nav {
-  position:fixed;top:0;left:0;right:0;z-index:200;
-  height:76px;
-  background:rgba(10, 10, 10, 0.7);
-  backdrop-filter:blur(30px);
-  border-bottom:1px solid var(--border);
-}
-.nav-inner {
-  max-width:1200px;margin:0 auto;padding:0 28px;
-  height:100%;display:flex;align-items:center;justify-content:space-between;
-}
-.logo {
-  font-family:var(--fh);font-size:1.3rem;font-weight:800;
-  letter-spacing:-0.02em;color:var(--text);
-  text-decoration:none;display:flex;align-items:center;gap:12px;
-}
-.logo-box {
-  width:40px;height:40px;
-  background: var(--primary);
-  border-radius: 10px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:1.2rem;color:#000;font-weight:900;
-  box-shadow: 0 0 20px var(--primary-glow);
-}
-.nav-r{display:flex;align-items:center;gap:20px;}
-.live-pill {
-  display:flex;align-items:center;gap:8px;
-  font-family:var(--fb);font-size:.75rem;font-weight:600;
-  letter-spacing:.05em;
-  color:var(--primary);
-  background:var(--primary-dark);
-  border:1px solid rgba(0, 255, 163, 0.3);
-  border-radius: 20px;
-  padding:8px 16px;
-}
-.live-dot {
-  width:6px;height:6px;border-radius:50%;
-  background:var(--primary);box-shadow:0 0 10px var(--primary);
-  animation:liveDot 2s ease-in-out infinite;
-}
-@keyframes liveDot{0%,100%{opacity:.4}50%{opacity:1}}
-.nav-slots {
-  font-family:var(--mono);font-size:.75rem;letter-spacing:.05em;
-  color:var(--muted);
-}
-.btn-cta {
-  font-family:var(--fh);font-size:.8rem;font-weight:700;
-  color:#000;text-decoration:none;
-  background:var(--primary);
-  border-radius: 24px;
-  border:none;padding:12px 24px;
-  transition:all .3s ease;
-  box-shadow: 0 4px 20px var(--primary-glow);
-}
-.btn-cta:hover{
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(0, 255, 163, 0.4);
-  background: #33ffb8;
-}
-
-/* ── NEWS SECTION ── */
-.news-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 24px;
-}
-.news-card {
-  background: var(--panel-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  transition: all .3s ease;
-  text-decoration: none;
-  backdrop-filter: blur(20px);
-}
-.news-card:hover {
-  border-color: rgba(0, 255, 163, 0.3);
-  background: rgba(255,255,255,0.02);
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.5), inset 0 0 40px rgba(0, 255, 163, 0.05);
-}
-.news-img-wrap {
-  width: 100%; height: 160px; overflow: hidden; border-radius: 12px;
-  margin-bottom: 8px;
-}
-.news-img {
-  width: 100%; height: 100%; object-fit: cover;
-  transition: transform 0.5s ease;
-}
-.news-card:hover .news-img { transform: scale(1.05); }
-.news-meta {
-  display: flex; justify-content: space-between;
-  font-family: var(--fb); font-size: 0.7rem; color: var(--primary); text-transform: uppercase; letter-spacing: 0.1em;
-  font-weight: 600;
-}
-.news-title {
-  font-family: var(--fh); font-size: 1.1rem; font-weight: 700; color: var(--text); line-height: 1.4;
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-}
-.news-body {
-  font-family: var(--fb); font-size: 0.85rem; color: var(--muted); line-height: 1.5;
-  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
-}
-
-/* Glass Panels */
-.hologram-panel {
-  background: var(--panel-bg);
-  border: 1px solid var(--border);
-  border-radius: 32px;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.5);
-  backdrop-filter: blur(30px);
-  padding: 48px;
-  margin-bottom: 48px;
-}
-
-/* ── MAIN ── */
-main{position:relative;z-index:2;}
-.page{max-width:1200px;margin:0 auto;padding:0 28px;}
-
-/* ── HERO ── */
-.hero {
-  min-height:100vh;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  text-align:center;padding:140px 28px 60px;
-}
-.hero-badge {
-  display:inline-flex;align-items:center;gap:10px;
-  font-family:var(--fb);font-size:.8rem;font-weight:600;
-  letter-spacing:.05em;
-  color:var(--primary);
-  background:var(--primary-dark);
-  border:1px solid rgba(0, 255, 163, 0.2);
-  border-radius: 30px;
-  padding:8px 20px;margin-bottom:48px;
-  opacity:0;
-  box-shadow: 0 0 20px var(--primary-glow);
-}
-
-/* ── ORB / HOLO ── */
-.orb-wrap{
-  position:relative;width:300px;height:300px;
-  margin:0 auto 48px;opacity:0;
-}
-.orb-glow{
-  position:absolute;inset:-80px;
-  background:radial-gradient(circle,var(--primary-glow),transparent 70%);
-  animation:orbBob 4s ease-in-out infinite;
-}
-.orb-r3{position:absolute;top:-60px;left:-60px;width:420px;height:420px;animation:orbSpin 120s linear infinite;}
-.orb-r2{position:absolute;top:-60px;left:-60px;width:420px;height:420px;animation:orbSpin 90s linear infinite reverse;}
-.orb-moons{position:absolute;top:-60px;left:-60px;width:420px;height:420px;z-index:10;pointer-events:none;}
-
-/* Occult Page Frame */
-.page-frame {
-  position: fixed; inset: 24px; pointer-events: none; z-index: 100;
-  border: 1px solid rgba(255,255,255,0.08);
-}
-.cf { position: absolute; width: 40px; height: 40px; border: 1px solid rgba(255,255,255,0.4); }
-.cf-tl { top: -5px; left: -5px; border-right: none; border-bottom: none; }
-.cf-tr { top: -5px; right: -5px; border-left: none; border-bottom: none; }
-.cf-bl { bottom: -5px; left: -5px; border-right: none; border-top: none; }
-.cf-br { bottom: -5px; right: -5px; border-left: none; border-top: none; }
-.cf::after { content:''; position:absolute; width:4px; height:4px; background:#fff; border-radius:50%; }
-.cf-tl::after { top: -2px; left: -2px; }
-.cf-tr::after { top: -2px; right: -2px; }
-.cf-bl::after { bottom: -2px; left: -2px; }
-.cf-br::after { bottom: -2px; right: -2px; }
-.orb-core{
-  position:absolute;inset:60px;
-  background:transparent;
-  border-radius: 50%;
-  box-shadow:0 0 120px var(--primary-glow);
-  animation:orbBob 4s ease-in-out infinite;
-}
-@keyframes orbSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-@keyframes orbBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
-
-.hero h1{
-  font-family:var(--fh);
-  font-size:clamp(3.5rem,8vw,6.5rem);font-weight:800;
-  line-height:1.05;letter-spacing:-0.03em;margin-bottom:32px;opacity:0;
-}
-.hero h1 em{
-  font-style:normal;
-  background: linear-gradient(to right, #FFFFFF, var(--primary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-.hero-sub{
-  font-size:1.2rem;font-weight:400;color:var(--muted);
-  line-height:1.6;max-width:650px;margin:0 auto 56px;opacity:0;
-}
-
-/* ── TRUST STRIP ── */
-.trust-strip{
-  display:flex;gap:12px;flex-wrap:wrap;justify-content:center;
-  margin-bottom:64px;opacity:0;
-}
-.trust-item{
-  font-family:var(--fb);font-size:.85rem;
-  background:var(--panel-bg);
-  border:1px solid var(--border);
-  border-radius: 12px;
-  padding:8px 16px;
-  color:var(--text);
-  backdrop-filter: blur(10px);
-}
-
-/* ── METRICS ── */
-.metrics-row{
-  display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap:20px;
-  width:100%;max-width:1100px;opacity:0;
-}
-.metric{
-  background:var(--panel-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding:32px 24px;text-align:center;
-  backdrop-filter: blur(30px);
-  transition: transform 0.3s ease, border-color 0.3s ease;
-}
-.metric:hover { 
-  transform: translateY(-4px); 
-  border-color: rgba(0, 255, 163, 0.2);
-  box-shadow: 0 10px 30px rgba(0, 255, 163, 0.05);
-}
-.metric-v{
-  font-family:var(--fh);font-size:2.5rem;font-weight:700;
-  margin-bottom:12px;letter-spacing:-0.02em;
-}
-.metric-v.g{color:var(--green);}
-.metric-v.c{color:var(--primary);}
-.metric-v.r{color:var(--red);}
-.metric-l{font-family:var(--fb); font-size:.8rem;font-weight:600;text-transform:uppercase;color:var(--muted);letter-spacing:.05em;}
-
-/* ── TICKER ── */
-.ticker{
-  overflow:hidden;border-top:1px solid var(--border);border-bottom:1px solid var(--border);
-  background:rgba(10,10,10,.8);padding:12px 0;position:fixed;bottom:0;left:0;right:0;z-index:50;
-  backdrop-filter: blur(20px);
-}
-.ticker-t{
-  display:flex;gap:56px;
-  animation:tickScroll 25s linear infinite;
-  white-space:nowrap;width:max-content;
-}
-@keyframes tickScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-.tick-item{display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:.9rem; font-weight: 500;}
-.tl{color:var(--green)}.ts{color:var(--red)}.tm{color:var(--muted)}
-
-/* ── SECTION ── */
-.section{padding:120px 0;}
-.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:48px;flex-wrap:wrap;gap:20px; border-bottom: 1px solid var(--border); padding-bottom: 24px;}
-.sec-title{
-  font-family:var(--fh);font-size:2rem;font-weight:700;
-  color:var(--text);letter-spacing:-0.02em;
-  display:flex;align-items:center;gap:16px;
-}
-.cnt-badge{
-  font-family:var(--fb);font-size:.9rem;font-weight:600;
-  background:rgba(255,255,255,0.05);
-  color:var(--text);padding:6px 14px;border-radius: 20px;
-  margin-left: 16px; border: 1px solid var(--border);
-}
-
-/* ── SIGNAL CARDS ── */
-.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:24px;}
-.sig-card{
-  background:var(--panel-bg);
-  border:1px solid var(--border);
-  border-radius: var(--radius);
-  padding:32px;position:relative;
-  transition:all .3s ease;
-  backdrop-filter: blur(30px);
-  cursor: pointer;
-  overflow: hidden;
-}
-.sig-card::after {
-  content:'';position:absolute;top:0;left:0;width:100%;height:100%;
-  background: radial-gradient(circle at top right, rgba(0, 255, 163, 0.05), transparent 60%);
-  pointer-events: none;
-}
-.sig-card:hover{
-  border-color:rgba(0, 255, 163, 0.3);
-  transform:translateY(-4px);
-  box-shadow: 0 16px 50px rgba(0,0,0,0.5), inset 0 0 30px rgba(0, 255, 163, 0.05);
-}
-.card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;}
-.card-sym{font-family:var(--fh);font-size:1.5rem;font-weight:700;}
-.card-sym::before { content: 'HV.TICKER: '; font-size: 0.7rem; color: var(--primary); display: block; margin-bottom: 6px; font-family: var(--fb); letter-spacing: .05em;}
-.dir-tag{
-  font-family:var(--fb);font-size:.75rem;font-weight:700;
-  letter-spacing:.05em;padding:8px 16px; border-radius: 12px; text-transform: uppercase;
-}
-.dir-tag.long{background:var(--primary-dark);color:var(--green); border: 1px solid rgba(0, 255, 163, 0.3);}
-.dir-tag.short{background:rgba(255, 51, 102, 0.1);color:var(--red); border: 1px solid rgba(255, 51, 102, 0.3);}
-
-.price-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px;}
-.pf{background: rgba(0,0,0,0.3); padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03);}
-.pf label{display:block;font-size:.7rem;text-transform:uppercase;color:var(--muted);margin-bottom:8px; font-weight: 600;}
-.pf .v{font-family:var(--mono);font-size:1.1rem;font-weight:600;}
-.pf .v.en{color:var(--text)}.pf .v.sl{color:var(--red)}.pf .v.tp{color:var(--green)}
-
-.card-foot{display:flex;justify-content:space-between;align-items:center;padding-top:20px;border-top:1px solid var(--border);}
-.tf-tag{font-family:var(--mono);font-size:.8rem;color:var(--muted);}
-
-/* ── CHART ── */
-.chart-card{
-  background:transparent;
-}
-.chart-card h3{font-family:var(--fb);font-size:1.1rem;font-weight:600;color:var(--text);margin-bottom:32px;}
-
-/* ── TABLE ── */
-.table-wrap{background:var(--panel-bg);border:1px solid var(--border); border-radius: var(--radius); overflow-x: auto; backdrop-filter: blur(30px);}
-table{width:100%;border-collapse:collapse;}
-thead tr{background:rgba(255,255,255,.02); border-bottom: 1px solid var(--border);}
-th{text-align:left;padding:20px 24px;font-family:var(--fb);font-size:.8rem;font-weight:600;text-transform:uppercase;color:var(--muted);}
-td{padding:20px 24px;font-family:var(--mono); font-size:.95rem;border-bottom:1px solid rgba(255,255,255,.02);vertical-align:middle;}
-tbody tr{transition:background .2s;}
-tbody tr:hover td{background:rgba(255,255,255,.03);}
-.pill{display:inline-flex;align-items:center;font-family:var(--fb);font-size:.8rem;font-weight:700;text-transform:uppercase;padding:8px 16px; border-radius:10px;}
-.pill.long{color:var(--green); background: var(--primary-dark); border: 1px solid rgba(0, 255, 163, 0.3);}
-.pill.short{color:var(--red); background: rgba(255, 51, 102, 0.1); border: 1px solid rgba(255, 51, 102, 0.3);}
-.ppos{color:var(--green);font-weight:600;}
-.pneg{color:var(--red);font-weight:600;}
-
-/* ── SHIMMER ── */
-.shimmer{
-  background:linear-gradient(90deg,rgba(255,255,255,.02) 25%,rgba(255,255,255,.05) 50%,rgba(255,255,255,.02) 75%);
-  background-size:200% 100%;animation:shimmer 1.5s infinite;height:220px;
-  border-radius: var(--radius);
-}
-@keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
-
-/* ── BOOT SCREEN ── */
-.boot-screen{
-  position:fixed;inset:0;z-index:1000;
-  background:#0A0A0A;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:32px;transition:opacity .8s,visibility .8s;
-}
-.boot-screen.hidden{opacity:0;visibility:hidden;}
-.boot-logo{font-family:var(--fh);font-size:2.5rem;font-weight:800;color:var(--text);letter-spacing:-0.02em;}
-.boot-bar{width:300px;height:4px;background:rgba(255,255,255,.1); border-radius: 2px; overflow:hidden;}
-.boot-fill{height:100%;background:var(--primary);width:0%;transition:width .1s; box-shadow: 0 0 15px var(--primary);}
-.boot-txt{font-family:var(--mono);font-size:.85rem;color:var(--muted);}
-
-footer{position:relative;z-index:2;border-top:1px solid var(--border);padding:48px 28px;text-align:center; margin-top: 80px;}
-.foot-logo{font-family:var(--fh);font-size:1.3rem;font-weight:800;color:var(--muted);margin-bottom:20px; letter-spacing:-0.02em;}
-.foot-txt{font-family:var(--fb); font-size:.9rem;color:var(--muted);line-height:1.6;}
-
-.fade-up{opacity:0;transform:translateY(30px);transition:all .8s cubic-bezier(.23,1,.32,1);}
-.fade-up.in{opacity:1;transform:none;}
-.btn-ghost{
-  font-family:var(--fh);font-size:.85rem;font-weight:700;
-  color:var(--text);text-decoration:none;
-  background:var(--panel-bg);
-  border:1px solid var(--border);
-  border-radius: 24px;
-  padding:14px 28px;
-  transition:all .3s ease;display:inline-block;
-  backdrop-filter: blur(20px);
-}
-.btn-ghost:hover{
-  background:rgba(255,255,255,0.05);
-  border-color: rgba(0, 255, 163, 0.3);
-  transform: translateY(-2px);
-  color: var(--primary);
-}
-
-/* ── MOBILE OPTIMIZATIONS ── */
-@media (max-width: 768px) {
-  :root { --radius: 16px; }
-  .page { padding: 0 20px; }
-  .section { padding: 60px 0; }
-  .hologram-panel { padding: 32px 20px; border-radius: 24px; }
-  
-  nav { height: 64px; }
-  .nav-slots { display: none; }
-  .logo { font-size: 1.1rem; }
-  .logo-box { width: 32px; height: 32px; font-size: 1rem; border-radius: 8px; }
-  .live-pill { padding: 6px 12px; font-size: 0.65rem; }
-
-  .hero { padding-top: 100px; padding-bottom: 100px; }
-  .hero-badge { margin-bottom: 24px; font-size: 0.7rem; padding: 6px 14px; }
-  .hero h1 { font-size: clamp(2.5rem, 10vw, 3.5rem); margin-bottom: 20px; }
-  .hero-sub { font-size: 1rem; margin-bottom: 40px; }
-  
-  .orb-wrap { width: 220px; height: 220px; margin-bottom: 32px; }
-  .orb-r3, .orb-r2, .orb-moons { top: -45px; left: -45px; width: 310px; height: 310px; }
-  .orb-core { inset: 45px; }
-
-  .metrics-row { grid-template-columns: 1fr 1fr; gap: 12px; }
-  .metric { padding: 20px 16px; }
-  .metric-v { font-size: 1.8rem; }
-
-  .cards-grid { grid-template-columns: 1fr; }
-  .sig-card { padding: 24px; }
-  .card-sym { font-size: 1.2rem; }
-  .price-grid { grid-template-columns: 1fr; gap: 8px; }
-  .pf { padding: 12px; }
-
-  .sec-head { flex-direction: column; align-items: flex-start; gap: 12px; }
-  .sec-title { font-size: 1.5rem; }
-  .cnt-badge { margin-left: 8px; font-size: 0.8rem; }
-
-  .page-frame { inset: 12px; }
-  .cf { width: 20px; height: 20px; }
-  
-  .mobile-hint { display: block !important; }
-
-  /* Table scroll hint */
-  .table-wrap {
-    position: relative;
-    background: linear-gradient(to right, var(--panel-bg) 30%, rgba(20,22,24,0)),
-                linear-gradient(to right, rgba(20,22,24,0), var(--panel-bg) 70%) 0 100%,
-                radial-gradient(farthest-side at 0 50%, rgba(0,0,0,.2), rgba(0,0,0,0)),
-                radial-gradient(farthest-side at 100% 50%, rgba(0,0,0,.2), rgba(0,0,0,0)) 0 100%;
-    background-repeat: no-repeat;
-    background-size: 40px 100%, 40px 100%, 14px 100%, 14px 100%;
-    background-attachment: local, local, scroll, scroll;
-  }
-}
-
-@media (max-width: 480px) {
-  .hero { padding-bottom: 120px; }
-  .hero h1 { font-size: 2.2rem; }
-  .metrics-row { grid-template-columns: 1fr; }
-  .metric-v { font-size: 2rem; }
-  .trust-strip { gap: 8px; }
-  .trust-item { font-size: 0.75rem; padding: 6px 12px; }
-  
-  .boot-logo { font-size: 1.8rem; }
-  .boot-bar { width: 200px; }
-  
-  .table-wrap td, .table-wrap th { padding: 12px; font-size: 0.8rem; }
-  .pill { padding: 6px 12px; font-size: 0.7rem; }
-  
-  footer { padding-bottom: 80px; } /* Space for ticker */
-}
-
-main { padding-bottom: 60px; } /* Global space for ticker */
-
-</style>
-
-
-</head>
-<body>
-
-<!-- TAROT FRAME -->
-<div class="page-frame">
-  <div class="cf cf-tl"></div>
-  <div class="cf cf-tr"></div>
-  <div class="cf cf-bl"></div>
-  <div class="cf cf-br"></div>
-</div>
-
-
-<!-- BOOT SCREEN -->
-<div class="boot-screen" id="boot">
-  <div class="scan-line"></div>
-  <div class="boot-logo glitch-hover">HelioVeda AI</div>
-  <div class="boot-bar"><div class="boot-fill" id="boot-fill"></div></div>
-  <div class="boot-txt" id="boot-txt">INITIALIZING PRODUCTION ENGINE…</div>
-</div>
-
-
-
-<!-- THREE.JS CANVAS -->
-<canvas id="bg-canvas"></canvas>
-
-
-
-<!-- NAV -->
-<nav>
-  <div class="nav-inner">
-    <a href="#" class="logo glitch-hover"><div class="logo-box">HV</div>HelioVeda AI</a>
-    <div class="nav-r">
-      <div class="live-pill"><span class="live-dot"></span>AI • LIVE</div>
-      <div class="nav-slots" id="nav-slots">[ LIVE DATASTREAM ACTIVE ]</div>
-    </div>
-  </div>
-</nav>
-
-<main>
-
-<!-- HERO -->
-<section class="hero page" id="hero-section">
-  <div class="hero-badge" id="h-badge"><span class="live-dot"></span>Enlightened Intelligence &nbsp;•&nbsp; Real-Time &nbsp;•&nbsp; Institutional Grade</div>
-  <div class="orb-wrap" id="h-orb">
-    <div class="orb-glow"></div>
-    
-    <!-- Outer Celestial Frame (Orbits) -->
-    <svg class="orb-r3" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-      <!-- Outer dashed track -->
-      <circle cx="100" cy="100" r="95" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="0.5" stroke-dasharray="1 3"/>
-      <!-- Solid track -->
-      <circle cx="100" cy="100" r="85" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/>
-      <!-- 12 astrological nodes -->
-      <circle cx="185.0" cy="100.0" r="2" fill="#fff"/>
-      <circle cx="185.0" cy="100.0" r="4" fill="none" stroke="#fff" stroke-width="0.5"/>
-      <circle cx="173.6" cy="142.5" r="2" fill="#fff"/>
-      <circle cx="173.6" cy="142.5" r="4" fill="none" stroke="#fff" stroke-width="0.5"/>
-      <circle cx="142.5" cy="173.6" r="2" fill="#fff"/>
-      <circle cx="142.5" cy="173.6" r="4" fill="none" stroke="#fff" stroke-width="0.5"/>
-      <circle cx="100.0" cy="185.0" r="2" fill="#fff"/>
-      <circle cx="100.0" cy="185.0" r="4" fill="none" stroke="#fff" stroke-width="0.5"/>
-      <circle cx="57.5" cy="173.6" r="2" fill="#fff"/>
-      <circle cx="57.5" cy="173.6" r="4" fill="none" stroke="#fff" stroke-width="0.5"/>
-      <circle cx="26.4" cy="142.5" r="2" fill="#fff"/>
-      <circle cx="26.4" cy="142.5" r="4" fill="none" stroke="#fff" stroke-width="0.5"/>
-      <circle cx="15.0" cy="100.0" r="2" fill="#fff"/>
-      <circle cx="15.0" cy="100.0" r="4" fill="none" stroke="#fff" stroke-width="0.5"/>
-      <circle cx="26.4" cy="57.5" r="2" fill="#fff"/>
-      <circle cx="26.4" cy="57.5" r="4" fill="none" stroke="#fff" stroke-width="0.5"/>
-      <circle cx="57.5" cy="26.4" r="2" fill="#fff"/>
-      <circle cx="57.5" cy="26.4" r="4" fill="none" stroke="#fff" stroke-width="0.5"/>
-      <circle cx="100.0" cy="15.0" r="2" fill="#fff"/>
-      <circle cx="100.0" cy="15.0" r="4" fill="none" stroke="#fff" stroke-width="0.5"/>
-      <circle cx="142.5" cy="26.4" r="2" fill="#fff"/>
-      <circle cx="142.5" cy="26.4" r="4" fill="none" stroke="#fff" stroke-width="0.5"/>
-      <circle cx="173.6" cy="57.5" r="2" fill="#fff"/>
-      <circle cx="173.6" cy="57.5" r="4" fill="none" stroke="#fff" stroke-width="0.5"/>
-      
-      <!-- Occasional planets -->
-      <circle cx="20" cy="50" r="3" fill="var(--primary)"/>
-      <circle cx="180" cy="150" r="1.5" fill="#fff"/>
-      <circle cx="50" cy="180" r="2.5" fill="var(--primary)"/>
-    </svg>
-
-    <!-- Dense Radial Sunburst -->
-    <svg class="orb-r2" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-      <g stroke="rgba(255,255,255,0.35)" stroke-width="0.4">
-        <line x1="122.0" y1="100.0" x2="175.0" y2="100.0" />
-        <line x1="121.9" y1="101.9" x2="154.8" y2="104.8" />
-        <line x1="121.7" y1="103.8" x2="173.9" y2="113.0" />
-        <line x1="121.3" y1="105.7" x2="153.1" y2="114.2" />
-        <line x1="120.7" y1="107.5" x2="170.5" y2="125.7" />
-        <line x1="119.9" y1="109.3" x2="149.8" y2="123.2" />
-        <line x1="119.1" y1="111.0" x2="165.0" y2="137.5" />
-        <line x1="118.0" y1="112.6" x2="145.1" y2="131.5" />
-        <line x1="116.9" y1="114.1" x2="157.5" y2="148.2" />
-        <line x1="115.6" y1="115.6" x2="138.9" y2="138.9" />
-        <line x1="114.1" y1="116.9" x2="148.2" y2="157.5" />
-        <line x1="112.6" y1="118.0" x2="131.5" y2="145.1" />
-        <line x1="111.0" y1="119.1" x2="137.5" y2="165.0" />
-        <line x1="109.3" y1="119.9" x2="123.2" y2="149.8" />
-        <line x1="107.5" y1="120.7" x2="125.7" y2="170.5" />
-        <line x1="105.7" y1="121.3" x2="114.2" y2="153.1" />
-        <line x1="103.8" y1="121.7" x2="113.0" y2="173.9" />
-        <line x1="101.9" y1="121.9" x2="104.8" y2="154.8" />
-        <line x1="100.0" y1="122.0" x2="100.0" y2="175.0" />
-        <line x1="98.1" y1="121.9" x2="95.2" y2="154.8" />
-        <line x1="96.2" y1="121.7" x2="87.0" y2="173.9" />
-        <line x1="94.3" y1="121.3" x2="85.8" y2="153.1" />
-        <line x1="92.5" y1="120.7" x2="74.3" y2="170.5" />
-        <line x1="90.7" y1="119.9" x2="76.8" y2="149.8" />
-        <line x1="89.0" y1="119.1" x2="62.5" y2="165.0" />
-        <line x1="87.4" y1="118.0" x2="68.5" y2="145.1" />
-        <line x1="85.9" y1="116.9" x2="51.8" y2="157.5" />
-        <line x1="84.4" y1="115.6" x2="61.1" y2="138.9" />
-        <line x1="83.1" y1="114.1" x2="42.5" y2="148.2" />
-        <line x1="82.0" y1="112.6" x2="54.9" y2="131.5" />
-        <line x1="80.9" y1="111.0" x2="35.0" y2="137.5" />
-        <line x1="80.1" y1="109.3" x2="50.2" y2="123.2" />
-        <line x1="79.3" y1="107.5" x2="29.5" y2="125.7" />
-        <line x1="78.7" y1="105.7" x2="46.9" y2="114.2" />
-        <line x1="78.3" y1="103.8" x2="26.1" y2="113.0" />
-        <line x1="78.1" y1="101.9" x2="45.2" y2="104.8" />
-        <line x1="78.0" y1="100.0" x2="25.0" y2="100.0" />
-        <line x1="78.1" y1="98.1" x2="45.2" y2="95.2" />
-        <line x1="78.3" y1="96.2" x2="26.1" y2="87.0" />
-        <line x1="78.7" y1="94.3" x2="46.9" y2="85.8" />
-        <line x1="79.3" y1="92.5" x2="29.5" y2="74.3" />
-        <line x1="80.1" y1="90.7" x2="50.2" y2="76.8" />
-        <line x1="80.9" y1="89.0" x2="35.0" y2="62.5" />
-        <line x1="82.0" y1="87.4" x2="54.9" y2="68.5" />
-        <line x1="83.1" y1="85.9" x2="42.5" y2="51.8" />
-        <line x1="84.4" y1="84.4" x2="61.1" y2="61.1" />
-        <line x1="85.9" y1="83.1" x2="51.8" y2="42.5" />
-        <line x1="87.4" y1="82.0" x2="68.5" y2="54.9" />
-        <line x1="89.0" y1="80.9" x2="62.5" y2="35.0" />
-        <line x1="90.7" y1="80.1" x2="76.8" y2="50.2" />
-        <line x1="92.5" y1="79.3" x2="74.3" y2="29.5" />
-        <line x1="94.3" y1="78.7" x2="85.8" y2="46.9" />
-        <line x1="96.2" y1="78.3" x2="87.0" y2="26.1" />
-        <line x1="98.1" y1="78.1" x2="95.2" y2="45.2" />
-        <line x1="100.0" y1="78.0" x2="100.0" y2="25.0" />
-        <line x1="101.9" y1="78.1" x2="104.8" y2="45.2" />
-        <line x1="103.8" y1="78.3" x2="113.0" y2="26.1" />
-        <line x1="105.7" y1="78.7" x2="114.2" y2="46.9" />
-        <line x1="107.5" y1="79.3" x2="125.7" y2="29.5" />
-        <line x1="109.3" y1="80.1" x2="123.2" y2="50.2" />
-        <line x1="111.0" y1="80.9" x2="137.5" y2="35.0" />
-        <line x1="112.6" y1="82.0" x2="131.5" y2="54.9" />
-        <line x1="114.1" y1="83.1" x2="148.2" y2="42.5" />
-        <line x1="115.6" y1="84.4" x2="138.9" y2="61.1" />
-        <line x1="116.9" y1="85.9" x2="157.5" y2="51.8" />
-        <line x1="118.0" y1="87.4" x2="145.1" y2="68.5" />
-        <line x1="119.1" y1="89.0" x2="165.0" y2="62.5" />
-        <line x1="119.9" y1="90.7" x2="149.8" y2="76.8" />
-        <line x1="120.7" y1="92.5" x2="170.5" y2="74.3" />
-        <line x1="121.3" y1="94.3" x2="153.1" y2="85.8" />
-        <line x1="121.7" y1="96.2" x2="173.9" y2="87.0" />
-        <line x1="121.9" y1="98.1" x2="154.8" y2="95.2" />
-      </g>
-      <!-- Inner boundary -->
-      <circle cx="100" cy="100" r="22" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="0.5" stroke-dasharray="2 2"/>
-    </svg>
-
-    <!-- Static Vertical Moon Phases & Face -->
-    <svg class="orb-moons" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-       <!-- Top Moon: Thin crescent up -->
-       <path d="M88 28 A 12 12 0 0 1 112 28 A 10 10 0 0 0 88 28" fill="#fff"/>
-       <!-- Second Moon: Thick crescent/half up -->
-       <path d="M84 60 A 16 16 0 0 1 116 60 A 6 12 0 0 0 84 60" fill="#fff"/>
-       
-       <!-- Center: Astrolabe Clock -->
-       <circle cx="100" cy="100" r="18" fill="transparent" stroke="rgba(255,255,255,0.8)" stroke-width="0.5"/>
-       <circle cx="100" cy="100" r="14" fill="none" stroke="rgba(0,255,163,0.3)" stroke-width="0.5" stroke-dasharray="1 2"/>
-       <!-- Clock Hands (IDs for JS animation) -->
-       <g id="astro-hour" transform="rotate(0, 100, 100)">
-         <line x1="100" y1="100" x2="100" y2="88" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
-         <circle cx="100" cy="88" r="1" fill="#fff"/>
-       </g>
-       <g id="astro-minute" transform="rotate(0, 100, 100)">
-         <line x1="100" y1="100" x2="100" y2="84" stroke="var(--primary)" stroke-width="1" stroke-linecap="round"/>
-         <polygon points="99,84 101,84 100,81" fill="var(--primary)"/>
-       </g>
-       <g id="astro-second" transform="rotate(0, 100, 100)">
-         <line x1="100" y1="105" x2="100" y2="83" stroke="rgba(255,255,255,0.5)" stroke-width="0.5"/>
-         <circle cx="100" cy="83" r="0.5" fill="#fff"/>
-       </g>
-       <!-- Center Pin -->
-       <circle cx="100" cy="100" r="2" fill="transparent" stroke="#fff" stroke-width="1"/>
-       
-       <!-- Fourth Moon: Thick crescent down -->
-       <path d="M84 140 A 16 16 0 0 0 116 140 A 6 12 0 0 1 84 140" fill="#fff"/>
-       <!-- Bottom Moon: Thin crescent down -->
-       <path d="M88 172 A 12 12 0 0 0 112 172 A 10 10 0 0 1 88 172" fill="#fff"/>
-    </svg>
-
-    <div class="orb-core"></div>
-  </div>
-  <h1 id="h-h1" class="glitch-hover">ENLIGHTENED<br/><em> INTELLIGENCE.</em></h1>
-  <p class="hero-sub" id="h-sub">Unleash the power of radiant market insights. Zero-latency signals illuminating real-time execution data.</p>
-  <div class="metrics-row" id="h-metrics">
-    <div class="metric"><div class="metric-v c" id="m-active">—</div><div class="metric-l">Active Signals</div></div>
-    <div class="metric"><div class="metric-v g" id="m-wr">—</div><div class="metric-l">Win Rate</div></div>
-    <div class="metric"><div class="metric-v g" id="m-pnl">—</div><div class="metric-l">Total P&amp;L</div></div>
-    <div class="metric"><div class="metric-v g" id="m-unrealized">—</div><div class="metric-l">Unrealized P&amp;L</div></div>
-    <div class="metric"><div class="metric-v" id="m-tot" style="color:var(--text)">—</div><div class="metric-l">All Trades</div></div>
-  </div>
-</section>
-
-<!-- TICKER -->
-<div class="ticker">
-  <div class="ticker-t" id="ticker"></div>
-</div>
-
-<!-- PERFORMANCE -->
-<section class="section page fade-up hologram-panel" id="performance">
-  <div class="sec-head">
-    <div class="sec-title">Performance Analytics</div>
-  </div>
-  <div class="chart-card" style="background:transparent; border:none; box-shadow:none; padding:0;">
-    <h3>📈 Equity Curve — Real Performance</h3>
-    <div id="chart-root" style="height:280px"></div>
-  </div>
-</section>
-
-<!-- LATEST CRYPTO NEWS -->
-<section class="section page fade-up hologram-panel" id="news-section">
-  <div class="sec-head">
-    <div class="sec-title">📰 Latest Crypto News</div>
-    <div class="nav-slots" style="font-size:.6rem">SOURCE: [ CRYPTOCOMPARE ]</div>
-  </div>
-  <div class="news-grid" id="news-grid">
-    <div class="shimmer"></div><div class="shimmer" style="opacity:.5"></div><div class="shimmer" style="opacity:.2"></div>
-  </div>
-</section>
-
-<!-- ACTIVE SIGNALS -->
-<section class="section page fade-up hologram-panel" id="signals">
-  <div class="sec-head">
-    <div class="sec-title">⚡ Live Signals <span class="cnt-badge" id="act-badge">0</span></div>
-  </div>
-  <div class="cards-grid" id="act-grid">
-    <div class="shimmer"></div><div class="shimmer" style="opacity:.5"></div>
-  </div>
-</section>
-
-<!-- HISTORY -->
-<section class="section page fade-up hologram-panel" id="history">
-  <div class="sec-head">
-    <div class="sec-title">📉 Trade Monitor <span class="cnt-badge" id="hist-badge">0</span></div>
-  </div>
-  <div class="table-wrap">
-    <div class="mobile-hint" style="display:none; text-align:center; font-size:0.7rem; color:var(--primary); padding:8px; font-family:var(--mono);">[ SWIPE TO SCROLL ]</div>
-    <table>
-      <thead><tr>
-        <th>Symbol</th><th>Action</th><th>Entry Date/Price</th><th>Exit Date/Price</th><th>PnL %</th>
-      </tr></thead>
-      <tbody id="hist-body">
-        <tr><td colspan="5"><div class="empty"><div class="empty-i">⏳</div><div class="empty-t">Waiting for datastream…</div></div></td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div style="text-align:center;margin-top:24px;">
-    <button id="view-all-btn" class="btn-ghost" onclick="toggleHistory()">View All Trades</button>
-  </div>
-</section>
-
-</main>
-
-<footer>
-  <div class="foot-logo glitch-hover">HelioVeda AI_</div>
-  <div class="foot-txt">⚠ High-risk trading environment. All data sourced directly from production signals table. © 2025 HelioVeda AI</div>
-</footer>
-
-<script>
-// ═══════════════════════════════════
-// SUPABASE CONFIG
-// ═══════════════════════════════════
-const SUPABASE_URL = 'https://hlfianhpyryrnnmxwlcy.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhsZmlhbmhweXJ5cm5ubXh3bGN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMTc5MjIsImV4cCI6MjA5MTg5MzkyMn0.SeCgt7JYkYpKmjWSAYBlkLOuE5cL7HkvvjD02WGk4Ik';
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// ═══════════════════════════════════
-// GLOBAL STATE
-// ═══════════════════════════════════
-let allSignals = [];
-let chartInstance = null;
-let showAllHistory = false;
-
-// ═══════════════════════════════════
-// CORE FUNCTIONS
-// ═══════════════════════════════════
-
-async function fetchSignals() {
-  let allData = [];
-
-  // 1. Fetch from 'signals' table
-  try {
-    const { data, error } = await supabaseClient
-      .from("signals")
-      .select("*")
-      .order("created_at", { ascending: false });
-    
-    if (!error && data) {
-      const mappedSignals = data.map(s => ({
-        ...s,
-        id: s.id,
-        symbol: s.symbol || '—',
-        action: (s.action || '').toUpperCase(),
-        entry_price: s.entry_price || s.price || 0,
-        exit_price: s.exit_price || null,
-        sl_price: s.sl_price || s.sl || s.stop_loss || s.stop_price || 0,
-        tp_price: s.tp_price || s.tp || s.take_profit || 0,
-        confidence: s.confidence || 0,
-        timeframe: s.timeframe || '—',
-        created_at: s.created_at,
-        pnl_pct: s.pnl_pct || null
-      }));
-      allData = [...allData, ...mappedSignals];
-    }
-  } catch (e) { console.error(e); }
-
-  // 2. Fetch from 'orders' table & Group into Complete Trades
-  try {
-    const { data: orders, error: oError } = await supabaseClient
-      .from("orders")
-      .select("*")
-      .order("order_date", { ascending: true }); // Ascending to find entry first
-
-    if (!oError && orders) {
-      const tradeGroups = {};
-      orders.forEach(o => {
-        const tid = o.jr_trade_id || o.id;
-        if (!tradeGroups[tid]) {
-          tradeGroups[tid] = {
-            id: tid,
-            symbol: o.symbol || o.jr_pair || '—',
-            action: (o.side || o.jr_order_side || '').toUpperCase(),
-            entry_price: o.average || o.price || o.jr_price || 0,
-            exit_price: null,
-            sl_price: o.sl_price || o.sl || o.stop_loss || o.stop_price || o.jr_sl || 0,
-            tp_price: o.tp_price || o.tp || o.take_profit || o.jr_tp || 0,
-            confidence: o.confidence || 0,
-            timeframe: o.timeframe || '—',
-            created_at: o.order_date || o.created_at,
-            closed_at: null,
-            pnl_pct: o.pnl_pct || null
-          };
-        } else {
-          // If we already have this trade, this might be the exit order
-          const t = tradeGroups[tid];
-          const currentAction = t.action;
-          const newAction = (o.side || o.jr_order_side || '').toUpperCase();
-          
-          // If the new order is the opposite side or the trade is marked as closed, it's an exit
-          if ((newAction !== currentAction && newAction !== '') || o.jr_is_open === false || o.status === 'closed') {
-            t.exit_price = o.average || o.price || o.jr_price;
-            t.closed_at = o.order_filled_date || o.closed_at || o.order_date;
-            if (o.pnl_pct) t.pnl_pct = o.pnl_pct;
-          }
-          // Also update SL/TP if the new order has them
-          if (o.stop_price || o.jr_sl) t.sl_price = o.stop_price || o.jr_sl;
-          if (o.tp_price || o.jr_tp) t.tp_price = o.tp_price || o.jr_tp;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HelioVeda AI | Trading Systems</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+        
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #0f172a; /* Deep Navy Background */
+            color: #f8fafc;
         }
-      });
-      allData = [...allData, ...Object.values(tradeGroups)];
-    }
-  } catch (e) { console.error("Orders Grouping Error:", e); }
-
-  // 3. Deduplicate and Sort
-  let unique = Array.from(new Map(allData.map(item => [item.id, item])).values());
-  unique.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-
-  // Remove the oldest 11 trades (likely test data)
-  if (unique.length > 11) {
-    unique = unique.slice(0, -11);
-  } else {
-    unique = [];
-  }
-
-  return unique;
-}
-
-function calcPnL(s) {
-  // Requirement: If pnl_pct exists → use it
-  if (s.pnl_pct != null) return Number(s.pnl_pct);
-  
-  // Requirement: Else calculate if exit exists
-  if (!s.entry_price || !s.exit_price) return 0;
-  
-  const entry = Number(s.entry_price);
-  const exit = Number(s.exit_price);
-  const action = (s.action || '').toUpperCase();
-
-  // Formulas from requirement
-  if (action === 'BUY' || action === 'LONG') {
-    return ((exit - entry) / entry) * 100;
-  } else if (action === 'SELL' || action === 'SHORT') {
-    return ((entry - exit) / entry) * 100;
-  }
-  return 0;
-}
-
-function renderStats() {
-  const active = allSignals.filter(s => !s.exit_price);
-  const closed = allSignals.filter(s => s.exit_price);
-  
-  const winTrades = closed.filter(s => calcPnL(s) > 0);
-  const winRate = closed.length ? (winTrades.length / closed.length) * 100 : 0;
-  const totalPnL = closed.reduce((acc, s) => acc + calcPnL(s), 0);
-
-  // Unrealized PnL
-  const unrealizedPnL = active.reduce((acc, s) => acc + (s.unrealized_pnl || 0), 0);
-
-  animNum(document.getElementById('m-active'), active.length);
-  animNum(document.getElementById('m-wr'), winRate, '%', 1);
-  animNum(document.getElementById('m-pnl'), totalPnL, '%', 2, totalPnL >= 0 ? 'g' : 'r');
-  animNum(document.getElementById('m-tot'), allSignals.length);
-  
-  // Add Unrealized Metric if it exists
-  const uEl = document.getElementById('m-unrealized');
-  if (uEl) animNum(uEl, unrealizedPnL, '%', 2, unrealizedPnL >= 0 ? 'g' : 'r');
-
-  if (document.getElementById('act-badge')) document.getElementById('act-badge').textContent = active.length;
-  if (document.getElementById('hist-badge')) document.getElementById('hist-badge').textContent = closed.length;
-}
-
-async function fetchLivePrices(activeSignals) {
-  // Clean symbols: 'AVAX/USDT:USDT' -> 'AVAXUSDT'
-  const symbols = [...new Set(activeSignals.map(s => {
-    const base = s.symbol.split(':')[0]; // Remove :USDT suffix
-    return base.replace('/', '').toUpperCase();
-  }))];
-  
-  if (!symbols.length) return {};
-  
-  const priceMap = {};
-  try {
-    // Using a CORS proxy to bypass Binance's browser restrictions
-    const requests = symbols.map(async (s) => {
-      try {
-        const url = `https://api.binance.com/api/v3/ticker/price?symbol=${s}`;
-        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-        const resp = await fetch(proxyUrl);
-        const data = await resp.json();
-        if (data.price) priceMap[s] = parseFloat(data.price);
-      } catch (e) {
-        console.warn(`Price fetch failed for ${s}:`, e);
-      }
-    });
-    await Promise.all(requests);
-  } catch (e) {
-    console.error("Global price fetch error:", e);
-  }
-  return priceMap;
-}
-
-async function updateUnrealized() {
-  const active = allSignals.filter(s => !s.exit_price);
-  if (!active.length) return;
-
-  const prices = await fetchLivePrices(active);
-  active.forEach(s => {
-    const cleanSym = s.symbol.split(':')[0].replace('/', '').toUpperCase();
-    const current = prices[cleanSym];
-    if (current) {
-      const entry = Number(s.entry_price);
-      const action = (s.action || '').toUpperCase();
-      let pnl = 0;
-      if (action === 'BUY' || action === 'LONG') pnl = ((current - entry) / entry) * 100;
-      else if (action === 'SELL' || action === 'SHORT') pnl = ((entry - current) / entry) * 100;
-      s.unrealized_pnl = pnl;
-      s.current_price = current;
-    }
-  });
-  renderStats();
-  renderActive();
-}
-
-function renderActive() {
-  const el = document.getElementById('act-grid');
-  if (!el) return;
-  
-  const active = allSignals.filter(s => !s.exit_price);
-  
-  if (!active.length) {
-    el.innerHTML = `<div style="grid-column:1/-1"><div class="empty"><div class="empty-i">🔍</div><div class="empty-t">No active signals found in database.</div></div></div>`;
-    return;
-  }
-
-  el.innerHTML = active.map(s => {
-    const action = (s.action || '').toUpperCase();
-    const dirClass = (action === 'BUY' || action === 'LONG') ? 'long' : 'short';
-
-    const uPnL = s.unrealized_pnl || 0;
-    
-    return `<div class="sig-card ${dirClass}">
-      <div class="card-top">
-        <div class="card-sym">${s.symbol || '—'}</div>
-        <div class="dir-tag ${dirClass}">${action}</div>
-      </div>
-      <div class="price-grid">
-        <div class="pf"><label>Entry</label><div class="v en">${fmt(s.entry_price)}</div></div>
-        <div class="pf"><label>Live</label><div class="v" style="color:var(--cyan)">${s.current_price ? fmt(s.current_price) : 'FETCHING...'}</div></div>
-        <div class="pf"><label>Live PnL</label><div class="v ${uPnL >= 0 ? 'ppos' : 'pneg'}">${uPnL >= 0 ? '+' : ''}${uPnL.toFixed(2)}%</div></div>
-      </div>
-
-      <div class="card-foot">
-        <div class="tf-tag">${s.timeframe || '—'}</div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function renderHistory() {
-  const tb = document.getElementById('hist-body');
-  const btn = document.getElementById('view-all-btn');
-  if (!tb) return;
-  
-  const closed = allSignals.filter(s => s.exit_price);
-  
-  if (!closed.length) {
-    tb.innerHTML = `<tr><td colspan="5"><div class="empty"><div class="empty-i">📭</div><div class="empty-t">No closed trades yet.</div></div></td></tr>`;
-    if (btn) btn.style.display = 'none';
-    return;
-  }
-
-  if (btn) btn.style.display = 'inline-block';
-  const displayCount = showAllHistory ? 100 : 4;
-  if (btn) btn.textContent = showAllHistory ? 'Show Recent Only' : 'View All Trades';
-
-  tb.innerHTML = closed.slice(0, displayCount).map(s => {
-    const pnl = calcPnL(s);
-    const action = (s.action || '').toUpperCase();
-    const sideClass = (action === 'BUY' || action === 'LONG') ? 'long' : 'short';
-    
-    // Format Dates
-    const entryDate = s.created_at ? new Date(s.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
-    const exitDate = s.closed_at ? new Date(s.closed_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
-    
-    return `<tr>
-      <td style="font-family:var(--fh);font-size:.82rem;font-weight:700;">${s.symbol || '—'}</td>
-      <td><span class="pill ${sideClass}">${action}</span></td>
-      <td>
-        <div style="font-weight:bold">${fmt(s.entry_price)}</div>
-        <div style="font-size:0.65rem;color:var(--muted);margin-top:4px;">${entryDate}</div>
-      </td>
-      <td>
-        <div style="font-weight:bold">${fmt(s.exit_price)}</div>
-        <div style="font-size:0.65rem;color:var(--muted);margin-top:4px;">${exitDate}</div>
-      </td>
-      <td><span class="${pnl >= 0 ? 'ppos' : 'pneg'}">${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}%</span></td>
-    </tr>`;
-  }).join('');
-}
-
-function toggleHistory() {
-  showAllHistory = !showAllHistory;
-  renderHistory();
-}
-
-function startRealtime() {
-  // Listen to 'signals'
-  supabaseClient
-    .channel("signals-realtime")
-    .on("postgres_changes", { event: "*", schema: "public", table: "signals" }, (payload) => {
-      refreshAll();
-    })
-    .subscribe();
-
-  // Listen to 'orders'
-  supabaseClient
-    .channel("orders-realtime")
-    .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, (payload) => {
-      refreshAll();
-    })
-    .subscribe();
-}
-
-// ═══════════════════════════════════
-// UTILS
-// ═══════════════════════════════════
-
-async function refreshAll() {
-  allSignals = await fetchSignals();
-  renderStats();
-  renderActive();
-  renderHistory();
-  buildTicker(allSignals);
-  updateChart();
-  updateUnrealized(); // Initial price fetch
-}
-
-// Update unrealized PnL every 30 seconds
-setInterval(updateUnrealized, 30000);
-
-function fmt(n) {
-  if (n == null || n === '') return '—';
-  const v = Number(n);
-  return v >= 1000 ? v.toLocaleString(undefined, { maximumFractionDigits: 2 }) : v.toFixed(v < 1 ? 6 : 2);
-}
-
-function animNum(el, to, suf = '', dec = 0, colorClass = '') {
-  if (!el) return;
-  if (colorClass) el.className = 'metric-v ' + colorClass;
-  let from = parseFloat(el.textContent) || 0;
-  const s = performance.now(), d = 1000;
-  (function step(now) {
-    const p = Math.min((now - s) / d, 1), e = 1 - Math.pow(1 - p, 4), v = from + (to - from) * e;
-    el.textContent = (dec ? v.toFixed(dec) : Math.round(v)) + suf;
-    if (p < 1) requestAnimationFrame(step);
-  })(performance.now());
-}
-
-async function fetchNews() {
-  const grid = document.getElementById('news-grid');
-  if (!grid) return;
-  
-  try {
-    const resp = await fetch('https://min-api.cryptocompare.com/data/v2/news/?lang=EN');
-    const data = await resp.json();
-    if (data.Data && data.Data.length > 0) {
-      renderNews(data.Data.slice(0, 6)); // Display top 6 news
-    } else {
-      grid.innerHTML = `<div style="grid-column:1/-1"><div class="empty"><div class="empty-i">📰</div><div class="empty-t">No news available at the moment.</div></div></div>`;
-    }
-  } catch (e) {
-    console.error("News fetch error:", e);
-    grid.innerHTML = `<div style="grid-column:1/-1"><div class="empty"><div class="empty-i">⚠️</div><div class="empty-t">Failed to load news stream.</div></div></div>`;
-  }
-}
-
-function renderNews(articles) {
-  const grid = document.getElementById('news-grid');
-  if (!grid) return;
-  
-  const baseUrl = 'https://www.cryptocompare.com';
-  grid.innerHTML = articles.map(a => {
-    const date = new Date(a.published_on * 1000).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-    const img = a.imageurl.startsWith('http') ? a.imageurl : baseUrl + a.imageurl;
-    return `<a href="${a.url}" target="_blank" class="news-card">
-      <div class="news-img-wrap">
-        <img src="${img}" alt="News Image" class="news-img" loading="lazy" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%25%22 height=%22100%25%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%230a141e%22/></svg>'"/>
-      </div>
-      <div class="news-meta">
-        <span>${a.source_info.name}</span>
-        <span>${date}</span>
-      </div>
-      <div class="news-title">${a.title}</div>
-      <div class="news-body">${a.body}</div>
-    </a>`;
-  }).join('');
-}
-
-function buildTicker(data) {
-  const t = document.getElementById('ticker');
-  if (!t) return;
-  const items = data.slice(0, 10).map(s => {
-    const action = (s.action || '').toUpperCase();
-    const colorClass = (action === 'BUY' || action === 'LONG') ? 'tl' : 'ts';
-    return `<div class="tick-item"><span>${s.symbol}</span><span class="tm">|</span><span class="${colorClass}">${action}</span></div>`;
-  }).join('<span class="tm" style="color:rgba(255,255,255,.07)">———</span>');
-  t.innerHTML = items + items;
-}
-
-// ═══════════════════════════════════
-// PERFORMANCE CHART (REACT/RECHARTS)
-// ═══════════════════════════════════
-
-function updateChart() {
-  const closed = [...allSignals]
-    .filter(s => s.exit_price)
-    .sort((a, b) => new Date(a.closed_at || a.created_at) - new Date(b.closed_at || b.created_at));
-
-  let equity = 100;
-  const data = [{ name: 'Start', eq: 100 }];
-  
-  closed.forEach((s, i) => {
-    equity += calcPnL(s);
-    data.push({
-      name: s.symbol,
-      eq: Number(equity.toFixed(2))
-    });
-  });
-
-  if (data.length < 2) {
-    // Fill with empty data if none exists
-    for(let i=1; i<=5; i++) data.push({ name: 'Waiting...', eq: 100 });
-  }
-
-  const { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } = Recharts;
-  const e = React.createElement;
-
-  function Chart() {
-    return e(ResponsiveContainer, { width: "100%", height: "100%" },
-      e(AreaChart, { data, margin: { top: 10, right: 10, left: -10, bottom: 0 } },
-        e('defs', null,
-          e('linearGradient', { id: "cg", x1: "0", y1: "0", x2: "0", y2: "1" },
-            e('stop', { offset: "5%", stopColor: "#00FFA3", stopOpacity: 0.35 }),
-            e('stop', { offset: "95%", stopColor: "#00FFA3", stopOpacity: 0 })
-          )
-        ),
-        e(CartesianGrid, { stroke: "rgba(0,255,255,0.06)", strokeDasharray: "3 3" }),
-        e(XAxis, { dataKey: "name", stroke: "#3a5060", hide: true }),
-        e(YAxis, { stroke: "#3a5060", tick: { fontFamily: "'Space Mono',monospace", fontSize: 10 } }),
-        e(Tooltip, { contentStyle: { background: '#0A0A0A', border: '1px solid rgba(0,255,255,.25)', fontFamily: "'Space Mono',monospace", fontSize: 11, borderRadius: 8 } }),
-        e(Area, { type: "monotone", dataKey: "eq", stroke: "#00FFA3", fill: "url(#cg)", strokeWidth: 2, animationDuration: 500 })
-      )
-    );
-  }
-
-  const rootEl = document.getElementById('chart-root');
-  if (rootEl) {
-    if (!chartInstance) chartInstance = ReactDOM.createRoot(rootEl);
-    chartInstance.render(e(Chart));
-  }
-}
-
-// ═══════════════════════════════════
-// INITIALIZATION
-// ═══════════════════════════════════
-
-(function init() {
-  // Boot Sequence
-  const fill = document.getElementById('boot-fill');
-  const txt  = document.getElementById('boot-txt');
-  const msgs = ['INIT PRODUCTION ENGINE…', 'SYNCING SUPABASE…', 'MAPPING DATA MODEL…', 'STARTING REAL-TIME MESH…', 'HVTEM READY ✓'];
-  let pct = 0;
-  const tick = setInterval(() => {
-    pct += Math.random() * 15 + 5;
-    if (pct > 100) pct = 100;
-    if (fill) fill.style.width = pct + '%';
-    if (txt) txt.textContent = msgs[Math.min(Math.floor(pct / 21), msgs.length - 1)];
-    if (pct >= 100) {
-      clearInterval(tick);
-      setTimeout(() => {
-        document.getElementById('boot').classList.add('hidden');
-        refreshAll();
-        startRealtime();
-        fetchNews();
-      }, 500);
-    }
-  }, 120);
-
-  // Apiant-Inspired Scroll-Reactive 3D Background
-  (function initThree() {
-    const canvas = document.getElementById('bg-canvas');
-    if (!canvas) return;
-    
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-    renderer.setSize(innerWidth, innerHeight);
-    
-    const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x0A0A0A, 0.0005);
-
-    const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 1, 10000);
-    camera.position.set(0, 0, 1500);
-
-    // Dynamic Central Geometry (The "Apiant" Orb)
-    const orbGroup = new THREE.Group();
-    scene.add(orbGroup);
-
-    // Inner glowing core
-    const coreGeo = new THREE.SphereGeometry(260, 64, 64);
-    const coreMat = new THREE.MeshStandardMaterial({
-      color: 0x00FFA3,
-      emissive: 0x003322,
-      emissiveIntensity: 1.0,
-      roughness: 0.2,
-      metalness: 0.8,
-      wireframe: false,
-      transparent: true,
-      opacity: 0.95
-    });
-    const core = new THREE.Mesh(coreGeo, coreMat);
-    orbGroup.add(core);
-
-    // Outer complex wireframe
-    const outerGeo = new THREE.TorusKnotGeometry(400, 80, 128, 16);
-    const outerMat = new THREE.MeshStandardMaterial({
-      color: 0x003322,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.15
-    });
-    const outer = new THREE.Mesh(outerGeo, outerMat);
-    orbGroup.add(outer);
-
-    // Cosmic Environment (Galaxy & Stars)
-    const cosmicGroup = new THREE.Group();
-    scene.add(cosmicGroup);
-
-    // 1. Starfield (Milky Way band)
-    const starGeo = new THREE.BufferGeometry();
-    const starCount = 4000;
-    const starPos = new Float32Array(starCount * 3);
-    const starCol = new Float32Array(starCount * 3);
-
-    for(let i=0; i<starCount; i++) {
-      const isBand = Math.random() > 0.5;
-      let r, theta, y;
-      if (isBand) {
-        // Thick disk
-        r = 300 + Math.random() * 3500;
-        theta = Math.random() * Math.PI * 2;
-        y = (Math.random() - 0.5) * (Math.random() * 800); // Tighter distribution near center
-      } else {
-        // Spherical halo
-        r = 800 + Math.random() * 3000;
-        theta = Math.random() * Math.PI * 2;
-        const phi = Math.acos(2 * Math.random() - 1);
-        y = r * Math.sin(phi) * Math.sin(theta);
-        const x = r * Math.sin(phi) * Math.cos(theta);
-        const z = r * Math.cos(phi);
-        r = Math.sqrt(x*x + z*z);
-      }
-
-      starPos[i*3] = r * Math.cos(theta);
-      starPos[i*3+1] = y;
-      starPos[i*3+2] = r * Math.sin(theta);
-
-      // Colors: White, Emerald, Deep Green, Cyan
-      const t = Math.random();
-      if(t < 0.6) { starCol[i*3]=1; starCol[i*3+1]=1; starCol[i*3+2]=1; } // White
-      else if(t < 0.8) { starCol[i*3]=0; starCol[i*3+1]=1; starCol[i*3+2]=0.63; } // Emerald
-      else if(t < 0.9) { starCol[i*3]=0; starCol[i*3+1]=0.89; starCol[i*3+2]=1; } // Cyan
-      else { starCol[i*3]=0.5; starCol[i*3+1]=0.5; starCol[i*3+2]=0.5; } // Dim
-    }
-    starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-    starGeo.setAttribute('color', new THREE.BufferAttribute(starCol, 3));
-
-    const starMat = new THREE.PointsMaterial({
-      size: 3,
-      vertexColors: true,
-      transparent: true,
-      opacity: 0.8,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false
-    });
-    const stars = new THREE.Points(starGeo, starMat);
-    stars.rotation.x = Math.PI * 0.15;
-    stars.rotation.z = Math.PI * 0.1;
-    cosmicGroup.add(stars);
-
-    // 2. Cosmic Dust / Nebula
-    const createCircleTexture = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = 64; canvas.height = 64;
-      const ctx = canvas.getContext('2d');
-      const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-      gradient.addColorStop(0, 'rgba(255,255,255,1)');
-      gradient.addColorStop(1, 'rgba(255,255,255,0)');
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0,0,64,64);
-      return new THREE.CanvasTexture(canvas);
-    };
-
-    const dustGeo = new THREE.BufferGeometry();
-    const dustCount = 300;
-    const dustPos = new Float32Array(dustCount * 3);
-    for(let i=0; i<dustCount; i++) {
-      dustPos[i*3] = (Math.random() - 0.5) * 3000;
-      dustPos[i*3+1] = (Math.random() - 0.5) * 1000; // Flatter
-      dustPos[i*3+2] = (Math.random() - 0.5) * 3000;
-    }
-    dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
-    
-    const dustMat = new THREE.PointsMaterial({
-      size: 400,
-      color: 0x003322,
-      transparent: true,
-      opacity: 0.08,
-      map: createCircleTexture(),
-      depthWrite: false,
-      blending: THREE.AdditiveBlending
-    });
-    const dust = new THREE.Points(dustGeo, dustMat);
-    dust.rotation.copy(stars.rotation);
-    cosmicGroup.add(dust);
-
-    // 3. Asteroids & Giant Green Blocks
-    const shards = [];
-    const shardGeo = new THREE.TetrahedronGeometry(12, 1);
-    const blockGeo = new THREE.BoxGeometry(40, 40, 40);
-    
-    const shardMat = new THREE.MeshStandardMaterial({
-      color: 0x00A563,
-      emissive: 0x003322,
-      emissiveIntensity: 0.2,
-      roughness: 0.8,
-      metalness: 0.2,
-      flatShading: true
-    });
-    
-    const blockMat = new THREE.MeshStandardMaterial({
-      color: 0x00FFA3,
-      emissive: 0x00A563,
-      emissiveIntensity: 0.3,
-      transparent: true,
-      opacity: 0.1,
-      roughness: 0.2,
-      metalness: 0.8
-    });
-
-    for(let i=0; i<80; i++) {
-      const isBlock = Math.random() > 0.7;
-      const mesh = new THREE.Mesh(isBlock ? blockGeo : shardGeo, isBlock ? blockMat : shardMat);
-      
-      const zDist = isBlock ? -Math.random() * 2000 - 800 : (Math.random() - 0.5) * 2000;
-      mesh.position.set(
-        (Math.random() - 0.5) * 4000,
-        (Math.random() - 0.5) * 3000,
-        zDist
-      );
-      
-      mesh.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, 0);
-      const scale = isBlock ? Math.random() * 5 + 2 : Math.random() * 2 + 0.2;
-      mesh.scale.set(scale, scale, scale);
-      
-      mesh.userData = {
-        rx: (Math.random() - 0.5) * (isBlock ? 0.005 : 0.02),
-        ry: (Math.random() - 0.5) * (isBlock ? 0.005 : 0.02),
-        vy: (Math.random() - 0.5) * (isBlock ? 0.5 : 2)
-      };
-      cosmicGroup.add(mesh);
-      shards.push(mesh);
-    }
-
-    // Lighting
-    scene.add(new THREE.AmbientLight(0xffffff, 0.2));
-    const pointLight = new THREE.PointLight(0x003322, 2, 2000);
-    pointLight.position.set(500, 500, 500);
-    scene.add(pointLight);
-    
-    const pointLight2 = new THREE.PointLight(0x00FFA3, 2, 2000);
-    pointLight2.position.set(-500, -500, 500);
-    scene.add(pointLight2);
-
-    // Scroll & Mouse Tracking
-    let mx = 0, my = 0;
-    let scrollY = 0;
-    
-    window.addEventListener('mousemove', e => {
-      mx = (e.clientX / window.innerWidth - 0.5) * 2;
-      my = (e.clientY / window.innerHeight - 0.5) * 2;
-    });
-
-    window.addEventListener('scroll', () => {
-      scrollY = window.scrollY;
-    });
-
-    function animate() {
-      requestAnimationFrame(animate);
-      
-      // Idle Rotation
-      core.rotation.y += 0.002;
-      core.rotation.x += 0.001;
-      outer.rotation.y -= 0.001;
-      outer.rotation.z += 0.0005;
-      
-      // Cosmic Animation
-      stars.rotation.y += 0.0003;
-      dust.rotation.y += 0.0002;
-      shards.forEach(s => {
-        s.rotation.x += s.userData.rx;
-        s.rotation.y += s.userData.ry;
-        s.position.y += s.userData.vy;
-        if(s.position.y > 1000) s.position.y = -1000;
-        if(s.position.y < -1000) s.position.y = 1000;
-      });
-      
-      // Real-time DOM Tracking to align 3D Orb with HTML Rings
-      const orbEl = document.getElementById('h-orb');
-      if (orbEl) {
-        const rect = orbEl.getBoundingClientRect();
-        const dy_px = (rect.top + rect.height / 2) - (innerHeight / 2);
-        const dx_px = (rect.left + rect.width / 2) - (innerWidth / 2);
-        // Convert screen pixels to 3D units at z=0 (camera is at z=1500, fov=45)
-        const unitsPerPixel = 1242.64 / innerHeight;
-        orbGroup.position.x = dx_px * unitsPerPixel;
-        // Invert Y and add the camera offset so it stays in place relative to the view
-        orbGroup.position.y = -dy_px * unitsPerPixel + (scrollY * 0.5);
-      }
-      
-      const scrollProgress = scrollY * 0.001;
-      orbGroup.rotation.x = scrollProgress * 2;
-      
-      // Mouse Parallax
-      camera.position.x += (mx * 200 - camera.position.x) * 0.05;
-      camera.position.y += (-my * 200 - camera.position.y) * 0.05;
-      camera.lookAt(0, scrollY * 0.5, 0); // Keep looking at the orb
-      
-      renderer.render(scene, camera);
-    }
-    animate();
-
-    addEventListener('resize', () => {
-      camera.aspect = innerWidth / innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(innerWidth, innerHeight);
-    });
-  })();
-
-  // GSAP Entrance
-  gsap.timeline({ delay: .5 })
-    .to('#h-badge', { opacity: 1, y: 0, duration: .8 })
-    .to('#h-orb', { opacity: 1, duration: 1 }, '-=.4')
-    .to('#h-h1', { opacity: 1, y: 0, duration: .8 }, '-=.5')
-    .to('#h-sub', { opacity: 1, y: 0, duration: .7 }, '-=.5')
-    .to('#h-metrics', { opacity: 1, y: 0, duration: .6 }, '-=.3');
-
-  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .05 });
-  document.querySelectorAll('.fade-up').forEach(el => io.observe(el));
-
-  // Astrolabe Clock Logic
-  function updateAstrolabe() {
-    const now = new Date();
-    const ms = now.getMilliseconds();
-    const s = now.getSeconds() + ms / 1000;
-    const m = now.getMinutes() + s / 60;
-    const h = now.getHours() % 12 + m / 60;
-
-    const sDeg = s * 6;
-    const mDeg = m * 6;
-    const hDeg = h * 30;
-
-    const hHand = document.getElementById('astro-hour');
-    const mHand = document.getElementById('astro-minute');
-    const sHand = document.getElementById('astro-second');
-
-    if (hHand) hHand.setAttribute('transform', `rotate(${hDeg}, 100, 100)`);
-    if (mHand) mHand.setAttribute('transform', `rotate(${mDeg}, 100, 100)`);
-    if (sHand) sHand.setAttribute('transform', `rotate(${sDeg}, 100, 100)`);
-
-    requestAnimationFrame(updateAstrolabe);
-  }
-  updateAstrolabe();
-
-})();
-
-</script>
+        .glass-card { 
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 1rem;
+        }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+    </style>
+</head>
+<body class="min-h-screen pb-20">
+
+    <nav class="border-b border-white/[0.08] py-4 px-6 sticky top-0 z-50 bg-[#0f172a]/90 backdrop-blur-xl">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-10">
+                <div class="flex items-center gap-3 group cursor-pointer">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center font-black text-white shadow-[0_0_20px_rgba(37,99,235,0.3)] group-hover:scale-110 transition-transform duration-300">HV</div>
+                    <div class="flex flex-col leading-none">
+                        <span class="text-lg font-black tracking-tighter uppercase">HelioVeda</span>
+                        <span class="text-[10px] font-bold text-blue-500 uppercase tracking-[0.3em]">Neural Core</span>
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center gap-8 text-[11px] font-bold uppercase tracking-widest text-gray-500">
+                    <a href="#" class="text-white border-b-2 border-blue-500 pb-1">Dashboard</a>
+                    <a href="#" class="hover:text-white transition-colors">Signals</a>
+                    <a href="#" class="hover:text-white transition-colors">Analytics</a>
+                    <a href="#" class="hover:text-white transition-colors">Docs</a>
+                </div>
+            </div>
+            <div class="flex items-center gap-6">
+                <div id="status" class="hidden sm:flex items-center text-[9px] font-black text-blue-400 uppercase tracking-[0.2em] bg-blue-500/5 px-4 py-2 rounded-lg border border-blue-500/10">
+                    <span class="w-1.5 h-1.5 bg-blue-400 rounded-full mr-2 shadow-[0_0_8px_#60a5fa]"></span>
+                    Production Node: 0x42
+                </div>
+                <button class="bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest px-6 py-3 rounded-xl transition-all shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] hover:translate-y-[-1px]">
+                    Access Terminal
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto py-10 px-6">
+        
+        <!-- Metrics Dashboard -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+            <div class="glass-card p-6">
+                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Total Executions</p>
+                <p id="stat-total" class="text-3xl font-black">0</p>
+            </div>
+            <div class="glass-card p-6">
+                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Realized Yield</p>
+                <p id="stat-realized" class="text-3xl font-black text-gray-600">0.00%</p>
+            </div>
+            <div class="glass-card p-6">
+                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Unrealized Delta</p>
+                <p id="stat-unrealized" class="text-3xl font-black text-blue-500">0.00%</p>
+            </div>
+            <div class="glass-card p-6">
+                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Daily Session</p>
+                <p id="stat-daily" class="text-3xl font-black text-green-500">0.00%</p>
+            </div>
+        </div>
+
+        <!-- Live Signals Section -->
+        <section class="mb-16">
+            <div class="flex items-center gap-3 mb-8">
+                <h2 class="text-xl font-bold">Live Signals</h2>
+                <span id="live-count" class="bg-blue-600 text-[10px] font-black px-2 py-0.5 rounded">0</span>
+            </div>
+            <div id="live-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Live cards injected here -->
+                <p class="col-span-full text-center py-10 text-gray-500 italic">No active signals in current stream.</p>
+            </div>
+        </section>
+
+        <!-- Past Trades Section -->
+        <section>
+            <div class="flex justify-between items-end mb-8">
+                <div>
+                    <h2 class="text-xl font-bold">Past Trades</h2>
+                    <p class="text-gray-500 text-sm mt-1">Archived execution history (Last 30)</p>
+                </div>
+                <button onclick="fetchData()" class="text-[10px] font-bold text-blue-400 hover:text-white transition-colors border border-blue-400/20 px-5 py-2 rounded-lg hover:bg-blue-400/10">SYNC DATASTREAM</button>
+            </div>
+
+            <div class="glass-card overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-white/5 border-b border-white/5">
+                            <tr>
+                                <th class="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Asset</th>
+                                <th class="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Strategy</th>
+                                <th class="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Entry</th>
+                                <th class="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Exit</th>
+                                <th class="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider">PnL %</th>
+                                <th class="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody id="past-body" class="divide-y divide-white/5">
+                            <!-- Past trades injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="py-20 px-6 border-t border-white/5 text-center text-gray-600 text-[10px] uppercase tracking-[0.3em] font-bold">
+        <p>&copy; 2026 HelioVeda AI Intelligence Core. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://hlfianhpyryrnnmxwlcy.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhsZmlhbmhweXJ5cm5ubXh3bGN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMTc5MjIsImV4cCI6MjA5MTg5MzkyMn0.SeCgt7JYkYpKmjWSAYBlkLOuE5cL7HkvvjD02WGk4Ik';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        async function fetchData() {
+            const liveGrid = document.getElementById('live-grid');
+            const pastBody = document.getElementById('past-body');
+            
+            try {
+                const { data, error } = await supabaseClient
+                    .from('signals')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(50); // Fetch more to split effectively
+
+                if (error) throw error;
+
+                if (data && data.length > 0) {
+                    const liveSignals = data.filter(t => !t.exit_price && t.status !== 'closed' && t.pnl_pct == null);
+                    const pastTrades = data.filter(t => t.exit_price || t.status === 'closed' || t.pnl_pct != null).slice(0, 30);
+
+                    // Stats calculation
+                    let totalRealizedPnL = 0;
+                    let totalUnrealizedPnL = 0;
+                    let dailyPnL = 0;
+                    const today = new Date().toISOString().split('T')[0];
+
+                    data.forEach(t => {
+                        const pnl = parseFloat(t.pnl_pct || t.pnl || 0);
+                        if (t.exit_price || t.status === 'closed' || t.pnl_pct != null) {
+                            totalRealizedPnL += pnl;
+                            if (new Date(t.created_at).toISOString().split('T')[0] === today) dailyPnL += pnl;
+                        } else {
+                            totalUnrealizedPnL += pnl;
+                        }
+                    });
+
+                    // Update Live Signals Grid
+                    document.getElementById('live-count').innerText = liveSignals.length;
+                    if (liveSignals.length > 0) {
+                        liveGrid.innerHTML = liveSignals.map(sig => `
+                            <div class="glass-card p-6 border-l-4 border-blue-600 animate-in fade-in slide-in-from-left duration-500">
+                                <div class="flex justify-between items-start mb-4">
+                                    <div>
+                                        <h4 class="text-xl font-bold">${sig.symbol || sig.pair || 'BTC/USDT'}</h4>
+                                        <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-0.5">${sig.timeframe || '15M'} INTERFACE</p>
+                                    </div>
+                                    <span class="bg-green-500/10 text-green-500 text-[10px] font-black px-2 py-0.5 rounded border border-green-500/20">LIVE</span>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4 mb-6">
+                                    <div>
+                                        <p class="text-[9px] text-gray-500 uppercase font-bold">Entry Price</p>
+                                        <p class="mono text-sm font-bold">$${parseFloat(sig.entry_price || sig.price || 0).toLocaleString()}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[9px] text-gray-500 uppercase font-bold">Take Profit</p>
+                                        <p class="mono text-sm font-bold text-green-500">$${parseFloat(sig.take_profit || 0).toLocaleString()}</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between pt-4 border-t border-white/5">
+                                    <span class="text-[10px] text-blue-400 font-black uppercase tracking-tighter">Confidence: ${sig.confidence || 94}%</span>
+                                    <div class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-ping"></div>
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        liveGrid.innerHTML = '<p class="col-span-full text-center py-10 text-gray-500 italic">No active signals in current stream.</p>';
+                    }
+
+                    // Update Past Trades Table
+                    pastBody.innerHTML = pastTrades.map(t => {
+                        const pnl = parseFloat(t.pnl_pct || t.pnl || 0);
+                        const pnlColor = pnl >= 0 ? 'text-green-500' : 'text-red-500';
+                        const date = new Date(t.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+                        return `
+                            <tr class="hover:bg-white/[0.02] transition-colors">
+                                <td class="px-6 py-5 font-bold">${t.symbol || t.pair || 'BTC/USDT'}</td>
+                                <td class="px-6 py-5">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-black bg-white/5">
+                                        ${t.type || t.action || 'BUY'}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-5 mono text-xs">$${parseFloat(t.entry_price || t.price || 0).toLocaleString()}</td>
+                                <td class="px-6 py-5 mono text-xs text-gray-600">$${parseFloat(t.exit_price || 0).toLocaleString()}</td>
+                                <td class="px-6 py-5 mono text-sm font-bold ${pnlColor}">${pnl > 0 ? '+' : ''}${pnl.toFixed(2)}%</td>
+                                <td class="px-6 py-5 text-[10px] text-gray-600 font-bold uppercase">${date}</td>
+                            </tr>
+                        `;
+                    }).join('');
+
+                    // Update Stats
+                    document.getElementById('stat-total').innerText = data.length;
+                    document.getElementById('stat-realized').innerText = totalRealizedPnL.toFixed(2) + '%';
+                    document.getElementById('stat-realized').className = `text-3xl font-black ${totalRealizedPnL >= 0 ? 'text-green-500' : 'text-red-500'}`;
+                    document.getElementById('stat-unrealized').innerText = totalUnrealizedPnL.toFixed(2) + '%';
+                    document.getElementById('stat-daily').innerText = dailyPnL.toFixed(2) + '%';
+
+                }
+            } catch (err) {
+                console.error('Fetch Error:', err);
+            }
+        }
+
+        fetchData();
+        setInterval(fetchData, 60000);
+    </script>
 </body>
 </html>
