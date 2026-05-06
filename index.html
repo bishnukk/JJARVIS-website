@@ -119,6 +119,15 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhsZmlhbmhweXJ5cm5ubXh3bGN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMTc5MjIsImV4cCI6MjA5MTg5MzkyMn0.SeCgt7JYkYpKmjWSAYBlkLOuE5cL7HkvvjD02WGk4Ik';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        function formatPrice(val) {
+            const price = parseFloat(val);
+            if (!price) return '0.00';
+            if (price < 0.001) return price.toFixed(8);
+            if (price < 1) return price.toFixed(6);
+            if (price < 100) return price.toFixed(4);
+            return price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
         function calculatePnL(t) {
             if (t.pnl_pct !== null && t.pnl_pct !== undefined && t.pnl_pct !== 0) return parseFloat(t.pnl_pct);
             if (!t.entry_price || !t.exit_price || t.entry_price === 0) return 0;
@@ -126,8 +135,6 @@
             const entry = parseFloat(t.entry_price);
             const exit = parseFloat(t.exit_price);
             
-            // Long: (Exit - Entry) / Entry
-            // Short: (Entry - Exit) / Entry
             if (t.action === 'BUY' || t.side === 'buy') {
                 return ((exit - entry) / entry) * 100;
             } else if (t.action === 'SELL' || t.side === 'sell') {
@@ -183,7 +190,6 @@
                             };
                         } else {
                             const t = tradeGroups[tid];
-                            // If it's a closed order, set exit price
                             if (o.status === 'closed' || o.jr_is_open === false || (o.side && o.side.toUpperCase() !== t.action)) {
                                 t.exit_price = o.average || o.price || o.jr_price;
                                 if (o.pnl_pct) t.pnl_pct = o.pnl_pct;
@@ -198,28 +204,27 @@
                 const unique = Array.from(new Map(allData.map(item => [item.id, item])).values());
                 unique.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
                 
-                // RESTRIC TO TOP 30 ONLY
-                const limitedData = unique.slice(0, 30);
-                
-                // Split the limited set
-                const liveSignals = limitedData.filter(t => !t.exit_price && t.status !== 'closed' && t.pnl_pct == null);
-                const pastTrades = limitedData.filter(t => t.exit_price || t.pnl_pct != null || t.status === 'closed');
-
-                // Stats
+                // ALL-TIME Stats (calculated before slice)
                 let totalRealized = 0;
                 let totalUnrealized = 0;
                 let daily = 0;
-                const today = new Date().toISOString().split('T')[0];
+                const localToday = new Date().toLocaleDateString();
 
-                limitedData.forEach(t => {
+                unique.forEach(t => {
                     const pnl = calculatePnL(t);
-                    if (t.exit_price || t.pnl_pct != null || t.status === 'closed') {
+                    const isClosed = t.exit_price || t.pnl_pct != null || t.status === 'closed';
+                    if (isClosed) {
                         totalRealized += pnl;
-                        if (new Date(t.created_at).toISOString().split('T')[0] === today) daily += pnl;
+                        if (new Date(t.created_at).toLocaleDateString() === localToday) daily += pnl;
                     } else {
                         totalUnrealized += pnl;
                     }
                 });
+
+                // Display limited set in UI
+                const limitedData = unique.slice(0, 30);
+                const liveSignals = limitedData.filter(t => !t.exit_price && t.status !== 'closed' && t.pnl_pct == null);
+                const pastTrades = limitedData.filter(t => t.exit_price || t.pnl_pct != null || t.status === 'closed');
 
                 // Render
                 document.getElementById('live-count').innerText = liveSignals.length;
@@ -230,8 +235,8 @@
                             <span class="bg-blue-500/20 text-blue-400 text-[10px] font-black px-2 py-0.5 rounded">LIVE</span>
                         </div>
                         <div class="grid grid-cols-2 gap-4 mb-4">
-                            <div><p class="text-[9px] text-gray-500 uppercase font-bold">Entry</p><p class="mono text-sm font-bold">$${parseFloat(sig.entry_price).toLocaleString()}</p></div>
-                            <div><p class="text-[9px] text-gray-500 uppercase font-bold">Target</p><p class="mono text-sm font-bold text-green-500">$${parseFloat(sig.tp_price || 0).toLocaleString()}</p></div>
+                            <div><p class="text-[9px] text-gray-500 uppercase font-bold">Entry</p><p class="mono text-sm font-bold">$${formatPrice(sig.entry_price)}</p></div>
+                            <div><p class="text-[9px] text-gray-500 uppercase font-bold">Target</p><p class="mono text-sm font-bold text-green-500">$${formatPrice(sig.tp_price || 0)}</p></div>
                         </div>
                         <div class="pt-4 border-t border-white/5 flex justify-between items-center text-[10px] font-black uppercase text-blue-400">
                             <span>CONF: ${sig.confidence || 94}%</span>
@@ -246,15 +251,15 @@
                         <tr class="hover:bg-white/[0.02] transition-colors">
                             <td class="px-6 py-5 font-bold text-blue-500">${t.symbol}</td>
                             <td class="px-6 py-5"><span class="px-2 py-0.5 rounded text-[10px] font-black bg-white/5">${t.action}</span></td>
-                            <td class="px-6 py-5 mono text-xs text-gray-500">$${parseFloat(t.entry_price).toLocaleString()}</td>
-                            <td class="px-6 py-5 mono text-xs text-gray-300">$${parseFloat(t.exit_price || 0).toLocaleString()}</td>
+                            <td class="px-6 py-5 mono text-xs text-gray-500">$${formatPrice(t.entry_price)}</td>
+                            <td class="px-6 py-5 mono text-xs text-gray-300">$${formatPrice(t.exit_price || 0)}</td>
                             <td class="px-6 py-5 mono text-sm font-bold ${pnl >= 0 ? 'text-green-500' : 'text-red-500'}">${pnl > 0 ? '+' : ''}${pnl.toFixed(2)}%</td>
                             <td class="px-6 py-5 text-[10px] text-gray-600 font-bold uppercase">${new Date(t.created_at).toLocaleDateString([], {month:'short', day:'numeric'})}</td>
                         </tr>
                     `;
                 }).join('') : '<tr><td colspan="6" class="px-6 py-12 text-center text-gray-500 italic">No historical executions detected.</td></tr>';
 
-                document.getElementById('stat-total').innerText = limitedData.length;
+                document.getElementById('stat-total').innerText = unique.length;
                 document.getElementById('stat-realized').innerText = totalRealized.toFixed(2) + '%';
                 document.getElementById('stat-realized').className = `text-3xl font-black ${totalRealized >= 0 ? 'text-green-500' : 'text-red-500'}`;
                 document.getElementById('stat-unrealized').innerText = totalUnrealized.toFixed(2) + '%';
