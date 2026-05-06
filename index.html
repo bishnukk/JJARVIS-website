@@ -11,7 +11,7 @@
         
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
-            background-color: #0f172a; /* Deep Navy Background */
+            background-color: #0f172a; 
             color: #f8fafc;
         }
         .glass-card { 
@@ -39,16 +39,15 @@
                     <a href="#" class="text-white border-b-2 border-blue-500 pb-1">Dashboard</a>
                     <a href="#" class="hover:text-white transition-colors">Signals</a>
                     <a href="#" class="hover:text-white transition-colors">Analytics</a>
-                    <a href="#" class="hover:text-white transition-colors">Docs</a>
                 </div>
             </div>
             <div class="flex items-center gap-6">
                 <div id="status" class="hidden sm:flex items-center text-[9px] font-black text-blue-400 uppercase tracking-[0.2em] bg-blue-500/5 px-4 py-2 rounded-lg border border-blue-500/10">
                     <span class="w-1.5 h-1.5 bg-blue-400 rounded-full mr-2 shadow-[0_0_8px_#60a5fa]"></span>
-                    Production Node: 0x42
+                    System Online
                 </div>
-                <button class="bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest px-6 py-3 rounded-xl transition-all shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] hover:translate-y-[-1px]">
-                    Access Terminal
+                <button onclick="fetchData()" class="bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest px-6 py-3 rounded-xl transition-all shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] hover:translate-y-[-1px]">
+                    Sync Engine
                 </button>
             </div>
         </div>
@@ -59,43 +58,39 @@
         <!-- Metrics Dashboard -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
             <div class="glass-card p-6">
-                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Total Executions</p>
+                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Total Trades</p>
                 <p id="stat-total" class="text-3xl font-black">0</p>
             </div>
             <div class="glass-card p-6">
-                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Realized Yield</p>
-                <p id="stat-realized" class="text-3xl font-black text-gray-600">0.00%</p>
+                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Realized PnL</p>
+                <p id="stat-realized" class="text-3xl font-black">0.00%</p>
             </div>
             <div class="glass-card p-6">
-                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Unrealized Delta</p>
+                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Unrealized PnL</p>
                 <p id="stat-unrealized" class="text-3xl font-black text-blue-500">0.00%</p>
             </div>
             <div class="glass-card p-6">
                 <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Daily Session</p>
-                <p id="stat-daily" class="text-3xl font-black text-green-500">0.00%</p>
+                <p id="stat-daily" class="text-3xl font-black">0.00%</p>
             </div>
         </div>
 
-        <!-- Live Signals Section -->
+        <!-- Live Signals -->
         <section class="mb-16">
             <div class="flex items-center gap-3 mb-8">
                 <h2 class="text-xl font-bold">Live Signals</h2>
                 <span id="live-count" class="bg-blue-600 text-[10px] font-black px-2 py-0.5 rounded">0</span>
             </div>
             <div id="live-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Live cards injected here -->
-                <p class="col-span-full text-center py-10 text-gray-500 italic">No active signals in current stream.</p>
+                <p class="col-span-full text-center py-10 text-gray-500 italic">Scanning neural datastream...</p>
             </div>
         </section>
 
-        <!-- Past Trades Section -->
+        <!-- Past Trades -->
         <section>
-            <div class="flex justify-between items-end mb-8">
-                <div>
-                    <h2 class="text-xl font-bold">Past Trades</h2>
-                    <p class="text-gray-500 text-sm mt-1">Archived execution history (Last 30)</p>
-                </div>
-                <button onclick="fetchData()" class="text-[10px] font-bold text-blue-400 hover:text-white transition-colors border border-blue-400/20 px-5 py-2 rounded-lg hover:bg-blue-400/10">SYNC DATASTREAM</button>
+            <div class="flex items-center gap-3 mb-8">
+                <h2 class="text-xl font-bold">Past Trades</h2>
+                <p class="text-gray-500 text-sm">(Last 30 entries)</p>
             </div>
 
             <div class="glass-card overflow-hidden">
@@ -104,7 +99,7 @@
                         <thead class="bg-white/5 border-b border-white/5">
                             <tr>
                                 <th class="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Asset</th>
-                                <th class="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Strategy</th>
+                                <th class="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Type</th>
                                 <th class="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Entry</th>
                                 <th class="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Exit</th>
                                 <th class="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider">PnL %</th>
@@ -112,7 +107,9 @@
                             </tr>
                         </thead>
                         <tbody id="past-body" class="divide-y divide-white/5">
-                            <!-- Past trades injected here -->
+                            <tr>
+                                <td colspan="6" class="px-6 py-12 text-center text-gray-500 italic">No past trades detected.</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -120,12 +117,7 @@
         </section>
     </main>
 
-    <footer class="py-20 px-6 border-t border-white/5 text-center text-gray-600 text-[10px] uppercase tracking-[0.3em] font-bold">
-        <p>&copy; 2026 HelioVeda AI Intelligence Core. All rights reserved.</p>
-    </footer>
-
     <script>
-        // Supabase Configuration
         const SUPABASE_URL = 'https://hlfianhpyryrnnmxwlcy.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhsZmlhbmhweXJ5cm5ubXh3bGN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMTc5MjIsImV4cCI6MjA5MTg5MzkyMn0.SeCgt7JYkYpKmjWSAYBlkLOuE5cL7HkvvjD02WGk4Ik';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -133,101 +125,118 @@
         async function fetchData() {
             const liveGrid = document.getElementById('live-grid');
             const pastBody = document.getElementById('past-body');
-            
+            let allData = [];
+
             try {
-                const { data, error } = await supabaseClient
-                    .from('signals')
-                    .select('*')
-                    .order('created_at', { ascending: false })
-                    .limit(50); // Fetch more to split effectively
+                // 1. Fetch from signals
+                const { data: signals } = await supabaseClient.from('signals').select('*').order('created_at', { ascending: false });
+                if (signals) {
+                    allData = signals.map(s => ({
+                        id: s.id,
+                        symbol: s.symbol || s.pair || '—',
+                        action: (s.type || s.action || '').toUpperCase(),
+                        entry_price: s.entry_price || s.price || 0,
+                        exit_price: s.exit_price || null,
+                        tp_price: s.tp_price || s.tp || s.take_profit || 0,
+                        confidence: s.confidence || 0,
+                        timeframe: s.timeframe || '—',
+                        created_at: s.created_at,
+                        pnl_pct: s.pnl_pct || null
+                    }));
+                }
 
-                if (error) throw error;
-
-                if (data && data.length > 0) {
-                    const liveSignals = data.filter(t => !t.exit_price && t.status !== 'closed' && t.pnl_pct == null);
-                    const pastTrades = data.filter(t => t.exit_price || t.status === 'closed' || t.pnl_pct != null).slice(0, 30);
-
-                    // Stats calculation
-                    let totalRealizedPnL = 0;
-                    let totalUnrealizedPnL = 0;
-                    let dailyPnL = 0;
-                    const today = new Date().toISOString().split('T')[0];
-
-                    data.forEach(t => {
-                        const pnl = parseFloat(t.pnl_pct || t.pnl || 0);
-                        if (t.exit_price || t.status === 'closed' || t.pnl_pct != null) {
-                            totalRealizedPnL += pnl;
-                            if (new Date(t.created_at).toISOString().split('T')[0] === today) dailyPnL += pnl;
+                // 2. Fetch from orders & group
+                const { data: orders } = await supabaseClient.from('orders').select('*').order('order_date', { ascending: true });
+                if (orders) {
+                    const tradeGroups = {};
+                    orders.forEach(o => {
+                        const tid = o.jr_trade_id || o.id;
+                        if (!tradeGroups[tid]) {
+                            tradeGroups[tid] = {
+                                id: tid,
+                                symbol: o.symbol || o.jr_pair || '—',
+                                action: (o.side || o.jr_order_side || '').toUpperCase(),
+                                entry_price: o.average || o.price || o.jr_price || 0,
+                                exit_price: null,
+                                created_at: o.order_date || o.created_at,
+                                pnl_pct: o.pnl_pct || null
+                            };
                         } else {
-                            totalUnrealizedPnL += pnl;
+                            const t = tradeGroups[tid];
+                            if (o.jr_is_open === false || o.status === 'closed' || (o.side && o.side.toUpperCase() !== t.action)) {
+                                t.exit_price = o.average || o.price || o.jr_price;
+                                if (o.pnl_pct) t.pnl_pct = o.pnl_pct;
+                            }
                         }
                     });
-
-                    // Update Live Signals Grid
-                    document.getElementById('live-count').innerText = liveSignals.length;
-                    if (liveSignals.length > 0) {
-                        liveGrid.innerHTML = liveSignals.map(sig => `
-                            <div class="glass-card p-6 border-l-4 border-blue-600 animate-in fade-in slide-in-from-left duration-500">
-                                <div class="flex justify-between items-start mb-4">
-                                    <div>
-                                        <h4 class="text-xl font-bold">${sig.symbol || sig.pair || 'BTC/USDT'}</h4>
-                                        <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-0.5">${sig.timeframe || '15M'} INTERFACE</p>
-                                    </div>
-                                    <span class="bg-green-500/10 text-green-500 text-[10px] font-black px-2 py-0.5 rounded border border-green-500/20">LIVE</span>
-                                </div>
-                                <div class="grid grid-cols-2 gap-4 mb-6">
-                                    <div>
-                                        <p class="text-[9px] text-gray-500 uppercase font-bold">Entry Price</p>
-                                        <p class="mono text-sm font-bold">$${parseFloat(sig.entry_price || sig.price || 0).toLocaleString()}</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-[9px] text-gray-500 uppercase font-bold">Take Profit</p>
-                                        <p class="mono text-sm font-bold text-green-500">$${parseFloat(sig.take_profit || 0).toLocaleString()}</p>
-                                    </div>
-                                </div>
-                                <div class="flex items-center justify-between pt-4 border-t border-white/5">
-                                    <span class="text-[10px] text-blue-400 font-black uppercase tracking-tighter">Confidence: ${sig.confidence || 94}%</span>
-                                    <div class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-ping"></div>
-                                </div>
-                            </div>
-                        `).join('');
-                    } else {
-                        liveGrid.innerHTML = '<p class="col-span-full text-center py-10 text-gray-500 italic">No active signals in current stream.</p>';
-                    }
-
-                    // Update Past Trades Table
-                    pastBody.innerHTML = pastTrades.map(t => {
-                        const pnl = parseFloat(t.pnl_pct || t.pnl || 0);
-                        const pnlColor = pnl >= 0 ? 'text-green-500' : 'text-red-500';
-                        const date = new Date(t.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-
-                        return `
-                            <tr class="hover:bg-white/[0.02] transition-colors">
-                                <td class="px-6 py-5 font-bold">${t.symbol || t.pair || 'BTC/USDT'}</td>
-                                <td class="px-6 py-5">
-                                    <span class="px-2 py-0.5 rounded text-[10px] font-black bg-white/5">
-                                        ${t.type || t.action || 'BUY'}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-5 mono text-xs">$${parseFloat(t.entry_price || t.price || 0).toLocaleString()}</td>
-                                <td class="px-6 py-5 mono text-xs text-gray-600">$${parseFloat(t.exit_price || 0).toLocaleString()}</td>
-                                <td class="px-6 py-5 mono text-sm font-bold ${pnlColor}">${pnl > 0 ? '+' : ''}${pnl.toFixed(2)}%</td>
-                                <td class="px-6 py-5 text-[10px] text-gray-600 font-bold uppercase">${date}</td>
-                            </tr>
-                        `;
-                    }).join('');
-
-                    // Update Stats
-                    document.getElementById('stat-total').innerText = data.length;
-                    document.getElementById('stat-realized').innerText = totalRealizedPnL.toFixed(2) + '%';
-                    document.getElementById('stat-realized').className = `text-3xl font-black ${totalRealizedPnL >= 0 ? 'text-green-500' : 'text-red-500'}`;
-                    document.getElementById('stat-unrealized').innerText = totalUnrealizedPnL.toFixed(2) + '%';
-                    document.getElementById('stat-daily').innerText = dailyPnL.toFixed(2) + '%';
-
+                    allData = [...allData, ...Object.values(tradeGroups)];
                 }
-            } catch (err) {
-                console.error('Fetch Error:', err);
-            }
+
+                // Deduplicate & Sort
+                const unique = Array.from(new Map(allData.map(item => [item.id, item])).values());
+                unique.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+                
+                // Split
+                const liveSignals = unique.filter(t => !t.exit_price && t.pnl_pct == null).slice(0, 10);
+                const pastTrades = unique.filter(t => t.exit_price || t.pnl_pct != null).slice(0, 30);
+
+                // Stats
+                let totalRealized = 0;
+                let totalUnrealized = 0;
+                let daily = 0;
+                const today = new Date().toISOString().split('T')[0];
+
+                unique.forEach(t => {
+                    const pnl = parseFloat(t.pnl_pct || 0);
+                    if (t.exit_price || t.pnl_pct != null) {
+                        totalRealized += pnl;
+                        if (new Date(t.created_at).toISOString().split('T')[0] === today) daily += pnl;
+                    } else {
+                        totalUnrealized += pnl;
+                    }
+                });
+
+                // Update UI
+                document.getElementById('live-count').innerText = liveSignals.length;
+                liveGrid.innerHTML = liveSignals.length > 0 ? liveSignals.map(sig => `
+                    <div class="glass-card p-6 border-l-4 border-blue-600">
+                        <div class="flex justify-between items-start mb-4">
+                            <h4 class="text-xl font-bold">${sig.symbol}</h4>
+                            <span class="bg-blue-500/20 text-blue-400 text-[10px] font-black px-2 py-0.5 rounded">LIVE</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div><p class="text-[9px] text-gray-500 uppercase font-bold">Entry</p><p class="mono text-sm font-bold">$${parseFloat(sig.entry_price).toLocaleString()}</p></div>
+                            <div><p class="text-[9px] text-gray-500 uppercase font-bold">Target</p><p class="mono text-sm font-bold text-green-500">$${parseFloat(sig.tp_price || 0).toLocaleString()}</p></div>
+                        </div>
+                        <div class="pt-4 border-t border-white/5 flex justify-between items-center text-[10px] font-black uppercase text-blue-400">
+                            <span>CONF: ${sig.confidence || 94}%</span>
+                            <div class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-ping"></div>
+                        </div>
+                    </div>
+                `).join('') : '<p class="col-span-full text-center py-10 text-gray-500 italic">No active signals.</p>';
+
+                pastBody.innerHTML = pastTrades.length > 0 ? pastTrades.map(t => {
+                    const pnl = parseFloat(t.pnl_pct || 0);
+                    const pnlColor = pnl >= 0 ? 'text-green-500' : 'text-red-500';
+                    return `
+                        <tr class="hover:bg-white/[0.02] transition-colors">
+                            <td class="px-6 py-5 font-bold">${t.symbol}</td>
+                            <td class="px-6 py-5"><span class="px-2 py-0.5 rounded text-[10px] font-black bg-white/5">${t.action}</span></td>
+                            <td class="px-6 py-5 mono text-xs">$${parseFloat(t.entry_price).toLocaleString()}</td>
+                            <td class="px-6 py-5 mono text-xs text-gray-600">$${parseFloat(t.exit_price || 0).toLocaleString()}</td>
+                            <td class="px-6 py-5 mono text-sm font-bold ${pnlColor}">${pnl > 0 ? '+' : ''}${pnl.toFixed(2)}%</td>
+                            <td class="px-6 py-5 text-[10px] text-gray-600 uppercase">${new Date(t.created_at).toLocaleDateString()}</td>
+                        </tr>
+                    `;
+                }).join('') : '<tr><td colspan="6" class="px-6 py-12 text-center text-gray-500 italic">No historical data.</td></tr>';
+
+                document.getElementById('stat-total').innerText = unique.length;
+                document.getElementById('stat-realized').innerText = totalRealized.toFixed(2) + '%';
+                document.getElementById('stat-realized').className = `text-3xl font-black ${totalRealized >= 0 ? 'text-green-500' : 'text-red-500'}`;
+                document.getElementById('stat-unrealized').innerText = totalUnrealized.toFixed(2) + '%';
+                document.getElementById('stat-daily').innerText = daily.toFixed(2) + '%';
+
+            } catch (err) { console.error(err); }
         }
 
         fetchData();
