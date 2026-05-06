@@ -177,11 +177,12 @@
                 const unique = Array.from(new Map(allData.map(item => [item.id, item])).values());
                 unique.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
                 
-                // Live: No exit price and not closed
-                const liveSignals = unique.filter(t => !t.exit_price && t.status !== 'closed' && t.pnl_pct == null).slice(0, 12);
+                // RESTRIC TO TOP 30 ONLY
+                const limitedData = unique.slice(0, 30);
                 
-                // Past: Has exit price, OR pnl_pct, OR status is closed
-                const pastTrades = unique.filter(t => t.exit_price || t.pnl_pct != null || t.status === 'closed').slice(0, 30);
+                // Split the limited set
+                const liveSignals = limitedData.filter(t => !t.exit_price && t.status !== 'closed' && t.pnl_pct == null);
+                const pastTrades = limitedData.filter(t => t.exit_price || t.pnl_pct != null || t.status === 'closed');
 
                 // Stats
                 let totalRealized = 0;
@@ -189,7 +190,7 @@
                 let daily = 0;
                 const today = new Date().toISOString().split('T')[0];
 
-                unique.forEach(t => {
+                limitedData.forEach(t => {
                     const pnl = parseFloat(t.pnl_pct || 0);
                     if (t.exit_price || t.pnl_pct != null || t.status === 'closed') {
                         totalRealized += pnl;
@@ -232,7 +233,7 @@
                     `;
                 }).join('') : '<tr><td colspan="6" class="px-6 py-12 text-center text-gray-500 italic">No historical executions detected.</td></tr>';
 
-                document.getElementById('stat-total').innerText = unique.length;
+                document.getElementById('stat-total').innerText = limitedData.length;
                 document.getElementById('stat-realized').innerText = totalRealized.toFixed(2) + '%';
                 document.getElementById('stat-realized').className = `text-3xl font-black ${totalRealized >= 0 ? 'text-green-500' : 'text-red-500'}`;
                 document.getElementById('stat-unrealized').innerText = totalUnrealized.toFixed(2) + '%';
