@@ -53,15 +53,15 @@
         <!-- Metrics Dashboard -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
             <div class="glass-card p-6">
-                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Total Trades</p>
+                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Total Executions</p>
                 <p id="stat-total" class="text-3xl font-black">0</p>
             </div>
             <div class="glass-card p-6">
-                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Realized PnL</p>
+                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Realized Yield</p>
                 <p id="stat-realized" class="text-3xl font-black">0.00%</p>
             </div>
             <div class="glass-card p-6">
-                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Unrealized PnL</p>
+                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Unrealized Delta</p>
                 <p id="stat-unrealized" class="text-3xl font-black text-blue-500">0.00%</p>
             </div>
             <div class="glass-card p-6">
@@ -87,7 +87,7 @@
         <section>
             <div class="flex items-center gap-3 mb-8">
                 <h2 class="text-xl font-bold">Past Trades</h2>
-                <p class="text-gray-500 text-sm">(Buffered Execution Log)</p>
+                <p class="text-gray-500 text-sm">(Last 30 entries)</p>
             </div>
 
             <div class="glass-card overflow-hidden">
@@ -105,7 +105,7 @@
                         </thead>
                         <tbody id="past-body" class="divide-y divide-white/5">
                             <tr>
-                                <td colspan="6" class="px-6 py-12 text-center text-gray-500 italic">No historical data detected.</td>
+                                <td colspan="6" class="px-6 py-12 text-center text-gray-500 italic">Awaiting connection...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -127,27 +127,24 @@
 
             try {
                 // 1. Fetch from signals
-                const { data: signals, error: sErr } = await supabaseClient.from('signals').select('*').order('created_at', { ascending: false });
-                if (sErr) throw sErr;
-                
+                const { data: signals } = await supabaseClient.from('signals').select('*').order('created_at', { ascending: false });
                 if (signals) {
                     allData = signals.map(s => ({
                         id: s.id,
-                        symbol: s.symbol || s.pair || '—',
+                        symbol: (s.symbol || s.pair || '—').split(':')[0],
                         action: (s.type || s.action || '').toUpperCase(),
                         entry_price: s.entry_price || s.price || 0,
                         exit_price: s.exit_price || null,
                         tp_price: s.tp_price || s.tp || s.take_profit || 0,
                         confidence: s.confidence || 0,
                         created_at: s.created_at,
-                        pnl_pct: s.pnl_pct || null
+                        pnl_pct: s.pnl_pct || null,
+                        status: s.status || (s.exit_price ? 'closed' : 'open')
                     }));
                 }
 
                 // 2. Fetch from orders
-                const { data: orders, error: oErr } = await supabaseClient.from('orders').select('*').order('order_date', { ascending: true });
-                if (oErr) console.warn("Orders fetch failed:", oErr);
-                
+                const { data: orders } = await supabaseClient.from('orders').select('*').order('order_date', { ascending: true });
                 if (orders) {
                     const tradeGroups = {};
                     orders.forEach(o => {
@@ -155,19 +152,21 @@
                         if (!tradeGroups[tid]) {
                             tradeGroups[tid] = {
                                 id: tid,
-                                symbol: o.symbol || o.jr_pair || '—',
+                                symbol: (o.symbol || o.jr_pair || '—').split(':')[0],
                                 action: (o.side || o.jr_order_side || '').toUpperCase(),
                                 entry_price: o.average || o.price || o.jr_price || 0,
                                 exit_price: null,
                                 created_at: o.order_date || o.created_at,
-                                pnl_pct: o.pnl_pct || null
+                                pnl_pct: o.pnl_pct || null,
+                                status: o.status
                             };
                         } else {
                             const t = tradeGroups[tid];
-                            // If order side is different from entry, or it's explicitly closed
-                            if (o.side && o.side.toUpperCase() !== t.action || o.status === 'closed' || o.jr_is_open === false) {
+                            // If it's a closed order, set exit price
+                            if (o.status === 'closed' || o.jr_is_open === false || (o.side && o.side.toUpperCase() !== t.action)) {
                                 t.exit_price = o.average || o.price || o.jr_price;
                                 if (o.pnl_pct) t.pnl_pct = o.pnl_pct;
+                                t.status = 'closed';
                             }
                         }
                     });
@@ -178,10 +177,11 @@
                 const unique = Array.from(new Map(allData.map(item => [item.id, item])).values());
                 unique.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
                 
-                // If it's a "signal" and has no exit price, it's live.
-                // If it's an "order" and has an exit price, it's past.
-                const liveSignals = unique.filter(t => !t.exit_price && t.pnl_pct == null).slice(0, 15);
-                const pastTrades = unique.filter(t => t.exit_price || t.pnl_pct != null).slice(0, 50);
+                // Live: No exit price and not closed
+                const liveSignals = unique.filter(t => !t.exit_price && t.status !== 'closed' && t.pnl_pct == null).slice(0, 12);
+                
+                // Past: Has exit price, OR pnl_pct, OR status is closed
+                const pastTrades = unique.filter(t => t.exit_price || t.pnl_pct != null || t.status === 'closed').slice(0, 30);
 
                 // Stats
                 let totalRealized = 0;
@@ -191,7 +191,7 @@
 
                 unique.forEach(t => {
                     const pnl = parseFloat(t.pnl_pct || 0);
-                    if (t.exit_price || t.pnl_pct != null) {
+                    if (t.exit_price || t.pnl_pct != null || t.status === 'closed') {
                         totalRealized += pnl;
                         if (new Date(t.created_at).toISOString().split('T')[0] === today) daily += pnl;
                     } else {
@@ -216,21 +216,21 @@
                             <div class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-ping"></div>
                         </div>
                     </div>
-                `).join('') : '<p class="col-span-full text-center py-10 text-gray-500 italic">Searching neural stream...</p>';
+                `).join('') : '<p class="col-span-full text-center py-10 text-gray-500 italic">Neural sensors active. Scanning...</p>';
 
                 pastBody.innerHTML = pastTrades.length > 0 ? pastTrades.map(t => {
                     const pnl = parseFloat(t.pnl_pct || 0);
                     return `
                         <tr class="hover:bg-white/[0.02] transition-colors">
-                            <td class="px-6 py-5 font-bold text-blue-100">${t.symbol}</td>
-                            <td class="px-6 py-5"><span class="px-2 py-0.5 rounded text-[10px] font-black bg-white/10 text-gray-300">${t.action}</span></td>
-                            <td class="px-6 py-5 mono text-xs text-gray-400">$${parseFloat(t.entry_price).toLocaleString()}</td>
-                            <td class="px-6 py-5 mono text-xs text-gray-300 font-bold">$${parseFloat(t.exit_price || 0).toLocaleString()}</td>
+                            <td class="px-6 py-5 font-bold text-blue-500">${t.symbol}</td>
+                            <td class="px-6 py-5"><span class="px-2 py-0.5 rounded text-[10px] font-black bg-white/5">${t.action}</span></td>
+                            <td class="px-6 py-5 mono text-xs text-gray-500">$${parseFloat(t.entry_price).toLocaleString()}</td>
+                            <td class="px-6 py-5 mono text-xs text-gray-300">$${parseFloat(t.exit_price || 0).toLocaleString()}</td>
                             <td class="px-6 py-5 mono text-sm font-bold ${pnl >= 0 ? 'text-green-500' : 'text-red-500'}">${pnl > 0 ? '+' : ''}${pnl.toFixed(2)}%</td>
-                            <td class="px-6 py-5 text-[10px] text-gray-500 uppercase">${new Date(t.created_at).toLocaleDateString()}</td>
+                            <td class="px-6 py-5 text-[10px] text-gray-600 font-bold uppercase">${new Date(t.created_at).toLocaleDateString([], {month:'short', day:'numeric'})}</td>
                         </tr>
                     `;
-                }).join('') : '<tr><td colspan="6" class="px-6 py-12 text-center text-gray-500 italic">No historical trades found.</td></tr>';
+                }).join('') : '<tr><td colspan="6" class="px-6 py-12 text-center text-gray-500 italic">No historical executions detected.</td></tr>';
 
                 document.getElementById('stat-total').innerText = unique.length;
                 document.getElementById('stat-realized').innerText = totalRealized.toFixed(2) + '%';
@@ -242,7 +242,7 @@
 
             } catch (err) {
                 console.error(err);
-                errorBox.innerText = `Data link interrupted: ${err.message || 'Unknown error'}`;
+                errorBox.innerText = `System Alert: ${err.message || 'Datalink Interrupt'}`;
                 errorBox.classList.remove('hidden');
             }
         }
