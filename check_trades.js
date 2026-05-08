@@ -5,14 +5,24 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 async function check() {
-  const { data, error } = await supabase.from('orders').select('jr_trade_id');
-  if (error) console.error(error);
+  console.log('--- Checking Signals ---');
+  const { data: signals, error: sErr } = await supabase.from('signals').select('*').order('created_at', { ascending: false }).limit(5);
+  if (sErr) console.error(sErr);
   else {
-    const ids = data.map(d => d.jr_trade_id);
-    const unique = new Set(ids);
-    console.log('Total rows:', data.length);
-    console.log('Unique trade IDs:', unique.size);
+    console.log('Signals (last 5):');
+    if (!signals || signals.length === 0) console.log('  No signals found.');
+    else signals.forEach(s => console.log(`  ID: ${s.id}, Created: ${s.created_at}, Symbol: ${s.symbol}, Status: ${s.status}`));
+  }
+
+  console.log('\n--- Checking Orders ---');
+  const { data: orders, error: oErr } = await supabase.from('orders').select('*').order('order_date', { ascending: false }).limit(10);
+  if (oErr) console.error(oErr);
+  else {
+    console.log('Orders (last 10):');
+    if (!orders || orders.length === 0) console.log('  No orders found.');
+    else orders.forEach(o => {
+        console.log(`  ID: ${o.id}, TID: ${o.jr_trade_id}, Date: ${o.order_date}, Created: ${o.created_at}, Pair: ${o.jr_pair}, Status: ${o.status}`);
+    });
   }
 }
 check();
-
