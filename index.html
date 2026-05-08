@@ -79,7 +79,11 @@
                 <span id="live-count" class="bg-blue-600 text-[10px] font-black px-2 py-0.5 rounded">0</span>
             </div>
             <div id="live-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <p class="col-span-full text-center py-10 text-gray-500 italic">Scanning neural datastream...</p>
+                <!-- Dynamic Content -->
+            </div>
+            <div id="live-empty" class="hidden glass-card p-12 text-center">
+                <p class="text-gray-500 italic text-sm mb-2">Neural sensors active. Scanning...</p>
+                <p class="text-[10px] font-bold text-blue-500/50 uppercase tracking-[0.3em]">No active signals in current regime</p>
             </div>
         </section>
 
@@ -134,10 +138,11 @@
             
             const entry = parseFloat(t.entry_price);
             const exit = parseFloat(t.exit_price);
+            const action = (t.action || t.side || '').toUpperCase();
             
-            if (t.action === 'BUY' || t.side === 'buy') {
+            if (action === 'BUY' || action === 'LONG') {
                 return ((exit - entry) / entry) * 100;
-            } else if (t.action === 'SELL' || t.side === 'sell') {
+            } else if (action === 'SELL' || action === 'SHORT') {
                 return ((entry - exit) / entry) * 100;
             }
             return 0;
@@ -177,6 +182,8 @@
                     const tradeGroups = {};
                     orders.forEach(o => {
                         const tid = o.jr_trade_id || o.id;
+                        const oDate = o.order_date || o.created_at;
+                        
                         if (!tradeGroups[tid]) {
                             tradeGroups[tid] = {
                                 id: tid,
@@ -184,12 +191,18 @@
                                 action: (o.side || o.jr_order_side || '').toUpperCase(),
                                 entry_price: o.average || o.price || o.jr_price || 0,
                                 exit_price: null,
-                                created_at: o.order_date || o.created_at,
+                                created_at: oDate,
+                                last_activity: oDate,
                                 pnl_pct: o.pnl_pct || null,
                                 status: o.status
                             };
                         } else {
                             const t = tradeGroups[tid];
+                            // Update last activity to the most recent order date for sorting
+                            if (oDate && (!t.last_activity || new Date(oDate) > new Date(t.last_activity))) {
+                                t.last_activity = oDate;
+                            }
+                            
                             if (o.status === 'closed' || o.jr_is_open === false || (o.side && o.side.toUpperCase() !== t.action)) {
                                 t.exit_price = o.average || o.price || o.jr_price;
                                 if (o.pnl_pct) t.pnl_pct = o.pnl_pct;
@@ -201,9 +214,20 @@
                 }
 
                 // 3. Process
-                const unique = Array.from(new Map(allData.map(item => [item.id, item])).values());
-                unique.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+                console.log("Raw Signals:", signals ? signals.length : 0);
+                console.log("Raw Orders (grouped):", Object.keys(allData).length);
                 
+                const unique = Array.from(new Map(allData.map(item => [item.id, item])).values());
+                console.log("Unique items:", unique.length);
+                
+                unique.sort((a, b) => {
+                    const dateA = new Date(a.last_activity || a.created_at || 0);
+                    const dateB = new Date(b.last_activity || b.created_at || 0);
+                    return dateB - dateA;
+                });
+                
+                console.log("Top 10 unique items after sort:", unique.slice(0, 10));
+
                 // ALL-TIME Stats (calculated before slice)
                 let totalRealized = 0;
                 let totalUnrealized = 0;
@@ -222,9 +246,14 @@
                 });
 
                 // Display limited set in UI
-                const limitedData = unique.slice(0, 30);
-                const liveSignals = limitedData.filter(t => !t.exit_price && t.status !== 'closed' && t.pnl_pct == null);
-                const pastTrades = limitedData.filter(t => t.exit_price || t.pnl_pct != null || t.status === 'closed');
+                // We want to show the MOST RECENT trades.
+                // If there are many signals and many orders, let's make sure we see both.
+                
+                const liveSignals = unique.filter(t => !t.exit_price && t.status !== 'closed' && t.pnl_pct == null).slice(0, 10);
+                const pastTrades = unique.filter(t => t.exit_price || t.pnl_pct != null || t.status === 'closed').slice(0, 30);
+
+                console.log("Live Signals count:", liveSignals.length);
+                console.log("Past Trades count:", pastTrades.length);
 
                 // Render
                 const syncBtn = document.querySelector('button[onclick="fetchData()"]');
@@ -232,22 +261,46 @@
                 syncBtn.disabled = false;
 
                 document.getElementById('live-count').innerText = liveSignals.length;
-                liveGrid.innerHTML = liveSignals.length > 0 ? liveSignals.map(sig => `
-                    <div class="glass-card p-6 border-l-4 border-blue-600">
-                        <div class="flex justify-between items-start mb-4">
-                            <h4 class="text-xl font-bold">${sig.symbol}</h4>
-                            <span class="bg-blue-500/20 text-blue-400 text-[10px] font-black px-2 py-0.5 rounded">LIVE</span>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4 mb-4">
-                            <div><p class="text-[9px] text-gray-500 uppercase font-bold">Entry</p><p class="mono text-sm font-bold">$${formatPrice(sig.entry_price)}</p></div>
-                            <div><p class="text-[9px] text-gray-500 uppercase font-bold">Target</p><p class="mono text-sm font-bold text-green-500">$${formatPrice(sig.tp_price || 0)}</p></div>
-                        </div>
-                        <div class="pt-4 border-t border-white/5 flex justify-between items-center text-[10px] font-black uppercase text-blue-400">
-                            <span>CONF: ${sig.confidence || 94}%</span>
-                            <div class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-ping"></div>
-                        </div>
-                    </div>
-                `).join('') : '<p class="col-span-full text-center py-10 text-gray-500 italic">Neural sensors active. Scanning...</p>';
+                
+                // Render Live Signals
+                liveGrid.innerHTML = '';
+                const liveEmpty = document.getElementById('live-empty');
+                
+                if (liveSignals.length === 0) {
+                    liveEmpty.classList.remove('hidden');
+                } else {
+                    liveEmpty.classList.add('hidden');
+                    liveSignals.forEach(s => {
+                        const card = document.createElement('div');
+                        card.className = 'glass-card p-6 border-l-4 ' + (s.action === 'BUY' || s.action === 'LONG' ? 'border-blue-500' : 'border-red-500');
+                        card.innerHTML = `
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <h3 class="text-lg font-bold">${s.symbol}</h3>
+                                    <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">${s.action} | ${s.id}</p>
+                                </div>
+                                <div class="bg-blue-500/10 text-blue-400 text-[10px] font-black px-2 py-1 rounded">
+                                    ${(s.confidence * 100).toFixed(0)}% CONF
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <p class="text-[9px] text-gray-500 uppercase font-bold">Entry</p>
+                                    <p class="font-bold mono">${formatPrice(s.entry_price)}</p>
+                                </div>
+                                <div>
+                                    <p class="text-[9px] text-gray-500 uppercase font-bold">Target</p>
+                                    <p class="font-bold mono text-blue-400">${formatPrice(s.tp_price)}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+                                <span class="text-[10px] font-bold text-blue-500 uppercase tracking-widest">Active Neural Signal</span>
+                            </div>
+                        `;
+                        liveGrid.appendChild(card);
+                    });
+                }
 
                 pastBody.innerHTML = pastTrades.length > 0 ? pastTrades.map(t => {
                     const pnl = calculatePnL(t);
@@ -259,7 +312,9 @@
                             <td class="px-6 py-5 mono text-xs text-gray-500">$${formatPrice(t.entry_price)}</td>
                             <td class="px-6 py-5 mono text-xs text-gray-300">$${formatPrice(t.exit_price || 0)}</td>
                             <td class="px-6 py-5 mono text-sm font-bold ${pnl >= 0 ? 'text-green-500' : 'text-red-500'}">${pnl > 0 ? '+' : ''}${pnlFormatted}%</td>
-                            <td class="px-6 py-5 text-[10px] text-gray-600 font-bold uppercase">${new Date(t.created_at).toLocaleDateString([], {month:'short', day:'numeric'})}</td>
+                            <td class="px-6 py-5">
+                                <span class="text-[10px] text-gray-500 mono uppercase">${new Date(t.last_activity || t.created_at).toLocaleString()}</span>
+                            </td>
                         </tr>
                     `;
                 }).join('') : '<tr><td colspan="6" class="px-6 py-12 text-center text-gray-500 italic">No historical executions detected.</td></tr>';
