@@ -312,8 +312,8 @@
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const trades = await response.json();
 
-                // Sort newest first
-                trades.sort((a, b) => new Date(b.open_date || b.created_at) - new Date(a.open_date || a.created_at));
+                // Sort newest first based on open_date
+                trades.sort((a, b) => new Date(b.open_date) - new Date(a.open_date));
 
                 let winCount = 0;
                 let lossCount = 0;
@@ -323,30 +323,31 @@
                     tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-12 text-center text-gray-500 italic">No trade history found.</td></tr>';
                 } else {
                     const rowsHTML = trades.map(trade => {
-                        const statusStr = (trade.status || 'OPEN').toUpperCase();
+                        const statusStr = trade.is_open ? 'OPEN' : 'CLOSED';
                         let statusColor = statusStr === 'CLOSED' ? 'text-gray-400 bg-gray-500/10' : 'text-blue-400 bg-blue-500/10';
                         
-                        let profitRaw = parseFloat(trade.profit_pct || trade.profit || 0);
+                        let profitPct = (trade.profit_ratio || 0) * 100;
                         let profitColor = 'text-gray-300';
                         let profitDisplay = '-';
 
-                        if (statusStr === 'CLOSED' || profitRaw !== 0) {
-                            if (profitRaw > 0) {
+                        if (statusStr === 'CLOSED' || profitPct !== 0) {
+                            if (profitPct > 0) {
                                 profitColor = 'text-green-500';
                                 winCount++;
                                 totalClosed++;
-                            } else if (profitRaw < 0) {
+                            } else if (profitPct < 0) {
                                 profitColor = 'text-red-500';
                                 lossCount++;
                                 totalClosed++;
                             } else {
                                 totalClosed++; // breakeven
                             }
-                            profitDisplay = (profitRaw > 0 ? '+' : '') + profitRaw.toFixed(2) + '%';
+                            profitDisplay = (profitPct > 0 ? '+' : '') + profitPct.toFixed(2) + '%';
                         }
 
                         // Formatter helper for prices
                         const formatPrice = (p) => {
+                            if (p === null || p === undefined) return '-';
                             let num = parseFloat(p);
                             if (isNaN(num)) return '-';
                             if (num < 0.01) return '$' + num.toFixed(6);
@@ -356,16 +357,16 @@
 
                         return `
                             <tr class="hover:bg-white/[0.04] transition-colors duration-200">
-                                <td class="px-6 py-5 font-bold text-white">${trade.pair || trade.symbol || '-'}</td>
+                                <td class="px-6 py-5 font-bold text-white">${trade.pair || '-'}</td>
                                 <td class="px-6 py-5">
                                     <span class="px-2.5 py-1 rounded-md text-[10px] font-black tracking-widest ${statusColor}">
                                         ${statusStr}
                                     </span>
                                 </td>
-                                <td class="px-6 py-5 mono text-xs text-gray-300">${formatPrice(trade.entry_price)}</td>
-                                <td class="px-6 py-5 mono text-xs text-gray-300">${formatPrice(trade.exit_price)}</td>
+                                <td class="px-6 py-5 mono text-xs text-gray-300">${formatPrice(trade.open_rate)}</td>
+                                <td class="px-6 py-5 mono text-xs text-gray-300">${formatPrice(trade.close_rate)}</td>
                                 <td class="px-6 py-5 mono text-sm font-bold ${profitColor}">${profitDisplay}</td>
-                                <td class="px-6 py-5"><span class="text-[10px] text-gray-500 mono uppercase">${trade.open_date || trade.created_at ? new Date(trade.open_date || trade.created_at).toLocaleString() : '-'}</span></td>
+                                <td class="px-6 py-5"><span class="text-[10px] text-gray-500 mono uppercase">${trade.open_date ? new Date(trade.open_date).toLocaleString() : '-'}</span></td>
                                 <td class="px-6 py-5"><span class="text-[10px] text-gray-500 mono uppercase">${trade.close_date ? new Date(trade.close_date).toLocaleString() : '-'}</span></td>
                             </tr>
                         `;
