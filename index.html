@@ -4,23 +4,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HelioVeda AI | Trading Systems</title>
+    <!-- 11. Keep Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
+        /* 1. Futuristic Design keeping dark theme and fonts */
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
         
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             background-color: #0f172a; 
             color: #f8fafc;
+            /* 10. Smooth background transitions */
+            transition: background-color 0.3s ease;
         }
         .glass-card { 
             background: rgba(30, 41, 59, 0.5);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 1rem;
+            /* 10. Smooth animations */
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .glass-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
         }
         .mono { font-family: 'JetBrains Mono', monospace; }
+        
+        /* 6. Loading spinner animation */
+        .loader {
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: #3b82f6; /* blue-500 */
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 
+            0% { transform: rotate(0deg); } 
+            100% { transform: rotate(360deg); } 
+        }
     </style>
 </head>
 <body class="min-h-screen pb-20">
@@ -37,11 +60,13 @@
                 </div>
             </div>
             <div class="flex items-center gap-6">
+                <!-- Status Indicator -->
                 <div id="status" class="hidden sm:flex items-center text-[9px] font-black text-blue-400 uppercase tracking-[0.2em] bg-blue-500/5 px-4 py-2 rounded-lg border border-blue-500/10">
-                    <span class="w-1.5 h-1.5 bg-blue-400 rounded-full mr-2 shadow-[0_0_8px_#60a5fa]"></span>
-                    System Online
+                    <span id="status-dot" class="w-1.5 h-1.5 bg-blue-400 rounded-full mr-2 shadow-[0_0_8px_#60a5fa] animate-pulse"></span>
+                    <span id="status-text">System Online</span>
                 </div>
-                <button onclick="fetchData()" class="bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest px-6 py-3 rounded-xl transition-all shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] hover:translate-y-[-1px]">
+                <!-- Manual Refresh Button -->
+                <button onclick="loadSignals()" class="bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest px-6 py-3 rounded-xl transition-all shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] hover:translate-y-[-1px]">
                     Sync Engine
                 </button>
             </div>
@@ -50,66 +75,63 @@
 
     <main class="max-w-7xl mx-auto py-10 px-6">
         
-        <!-- Metrics Dashboard -->
+        <!-- 7. Global Error Display: Shows when API fails -->
+        <div id="global-error" class="hidden mb-8 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm flex items-center gap-3">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span id="error-message">Connection to Neural Core interrupted. Retrying...</span>
+        </div>
+
+        <!-- 3. Statistics Cards (Responsive layout: grid-cols-2 mobile, grid-cols-4 desktop) -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
             <div class="glass-card p-6">
-                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Total Executions</p>
-                <p id="stat-total" class="text-3xl font-black">0</p>
+                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Total Signals</p>
+                <p id="stat-total" class="text-3xl font-black transition-all">0</p>
             </div>
             <div class="glass-card p-6">
-                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Realized Yield</p>
-                <p id="stat-realized" class="text-3xl font-black">0.00%</p>
+                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">LONG Signals</p>
+                <p id="stat-long" class="text-3xl font-black text-green-500 transition-all">0</p>
             </div>
             <div class="glass-card p-6">
-                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Unrealized Delta</p>
-                <p id="stat-unrealized" class="text-3xl font-black text-blue-500">0.00%</p>
+                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">SHORT Signals</p>
+                <p id="stat-short" class="text-3xl font-black text-red-500 transition-all">0</p>
             </div>
             <div class="glass-card p-6">
-                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Daily Session</p>
-                <p id="stat-daily" class="text-3xl font-black">0.00%</p>
+                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Last Update</p>
+                <p id="stat-time" class="text-sm font-black text-blue-400 mt-2 mono transition-all">--:--:--</p>
             </div>
         </div>
 
-        <div id="error-box" class="hidden bg-red-500/10 border border-red-500/20 text-red-400 text-xs p-4 rounded-xl mb-8"></div>
-
-        <!-- Live Signals -->
         <section class="mb-16">
-            <div class="flex items-center gap-3 mb-8">
-                <h2 class="text-xl font-bold">Live Signals</h2>
-                <span id="live-count" class="bg-blue-600 text-[10px] font-black px-2 py-0.5 rounded">0</span>
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center gap-3">
+                    <h2 class="text-2xl font-bold">Live Trading Signals</h2>
+                    <!-- 6. Initial / Refresh Loading Indicator near header -->
+                    <div id="table-loader" class="loader hidden ml-2"></div>
+                </div>
             </div>
-            <div id="live-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Dynamic Content -->
-            </div>
-            <div id="live-empty" class="hidden glass-card p-12 text-center">
-                <p class="text-gray-500 italic text-sm mb-2">Neural sensors active. Scanning...</p>
-                <p class="text-[10px] font-bold text-blue-500/50 uppercase tracking-[0.3em]">No active signals in current regime</p>
-            </div>
-        </section>
-
-        <!-- Past Trades -->
-        <section>
-            <div class="flex items-center gap-3 mb-8">
-                <h2 class="text-xl font-bold">Past Trades</h2>
-                <p class="text-gray-500 text-sm">(Last 30 entries)</p>
-            </div>
-
+            
             <div class="glass-card overflow-hidden">
+                <!-- 8. Mobile responsive wrapper using overflow-x-auto -->
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left">
+                    <table class="w-full text-left" id="signalsTable">
                         <thead class="bg-white/5 border-b border-white/5">
                             <tr>
-                                <th class="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Asset</th>
-                                <th class="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Type</th>
-                                <th class="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Entry</th>
-                                <th class="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Exit</th>
-                                <th class="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider">PnL %</th>
-                                <th class="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Timestamp</th>
+                                <th class="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Symbol</th>
+                                <th class="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Timeframe</th>
+                                <th class="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Action</th>
+                                <th class="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Confidence</th>
+                                <th class="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Time</th>
                             </tr>
                         </thead>
-                        <tbody id="past-body" class="divide-y divide-white/5">
-                            <tr>
-                                <td colspan="6" class="px-6 py-12 text-center text-gray-500 italic">Awaiting connection...</td>
+                        <tbody class="divide-y divide-white/5 transition-all duration-500">
+                            <!-- 6. Initial Loading State -->
+                            <tr id="initial-loading">
+                                <td colspan="5" class="px-6 py-12 text-center text-gray-500 italic">
+                                    <div class="flex flex-col items-center justify-center gap-4">
+                                        <div class="loader"></div>
+                                        <span>Initializing Data Streams...</span>
+                                    </div>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -118,228 +140,134 @@
         </section>
     </main>
 
+    <!-- 13. Complete Javascript logic optimized for GitHub Pages / static hosting -->
     <script>
-        const SUPABASE_URL = 'https://hlfianhpyryrnnmxwlcy.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhsZmlhbmhweXJ5cm5ubXh3bGN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMTc5MjIsImV4cCI6MjA5MTg5MzkyMn0.SeCgt7JYkYpKmjWSAYBlkLOuE5cL7HkvvjD02WGk4Ik';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        let isFirstLoad = true;
 
-        function formatPrice(val) {
-            const price = parseFloat(val);
-            if (!price) return '0.00';
-            if (price < 0.001) return price.toFixed(8);
-            if (price < 1) return price.toFixed(6);
-            if (price < 100) return price.toFixed(4);
-            return price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
+        async function loadSignals() {
+            const tableLoader = document.getElementById('table-loader');
+            const tbody = document.querySelector("#signalsTable tbody");
+            const globalError = document.getElementById('global-error');
+            const statusDot = document.getElementById('status-dot');
+            const statusText = document.getElementById('status-text');
 
-        function calculatePnL(t) {
-            if (t.pnl_pct !== null && t.pnl_pct !== undefined && t.pnl_pct !== 0) return parseFloat(t.pnl_pct);
-            if (!t.entry_price || !t.exit_price || t.entry_price === 0) return 0;
-            
-            const entry = parseFloat(t.entry_price);
-            const exit = parseFloat(t.exit_price);
-            const action = (t.action || t.side || '').toUpperCase();
-            
-            if (action === 'BUY' || action === 'LONG') {
-                return ((exit - entry) / entry) * 100;
-            } else if (action === 'SELL' || action === 'SHORT') {
-                return ((entry - exit) / entry) * 100;
+            // Show mini loader on manual or subsequent refreshes
+            if (!isFirstLoad) {
+                tableLoader.classList.remove('hidden');
             }
-            return 0;
-        }
-
-        async function fetchData() {
-            const liveGrid = document.getElementById('live-grid');
-            const pastBody = document.getElementById('past-body');
-            const errorBox = document.getElementById('error-box');
-            let allData = [];
 
             try {
-                // 1. Fetch from signals
-                const { data: signals, error: sErr } = await supabaseClient.from('signals').select('*').order('created_at', { ascending: false });
-                if (sErr) throw sErr;
+                // 15. Fetch data from Render endpoint. CORS headers must be configured on backend.
+                const response = await fetch("https://jarvisai-nqpj.onrender.com/api/signals");
                 
-                if (signals) {
-                    allData = signals.map(s => ({
-                        id: s.id,
-                        symbol: (s.symbol || s.pair || '—').split(':')[0],
-                        action: (s.type || s.action || '').toUpperCase(),
-                        entry_price: s.entry_price || s.price || 0,
-                        exit_price: s.exit_price || null,
-                        tp_price: s.tp_price || s.tp || s.take_profit || 0,
-                        confidence: s.confidence || 0,
-                        created_at: s.created_at,
-                        pnl_pct: s.pnl_pct || null,
-                        status: s.status || (s.exit_price ? 'closed' : 'open')
-                    }));
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
-                // 2. Fetch from orders
-                const { data: orders, error: oErr } = await supabaseClient.from('orders').select('*').order('order_date', { ascending: true });
-                if (oErr) console.warn("Orders fetch failed:", oErr);
-                
-                if (orders) {
-                    const tradeGroups = {};
-                    orders.forEach(o => {
-                        const tid = o.jr_trade_id || o.id;
-                        const oDate = o.order_date || o.created_at;
-                        
-                        if (!tradeGroups[tid]) {
-                            tradeGroups[tid] = {
-                                id: tid,
-                                symbol: (o.symbol || o.jr_pair || '—').split(':')[0],
-                                action: (o.side || o.jr_order_side || '').toUpperCase(),
-                                entry_price: o.average || o.price || o.jr_price || 0,
-                                exit_price: null,
-                                created_at: oDate,
-                                last_activity: oDate,
-                                pnl_pct: o.pnl_pct || null,
-                                status: o.status
-                            };
-                        } else {
-                            const t = tradeGroups[tid];
-                            // Update last activity to the most recent order date for sorting
-                            if (oDate && (!t.last_activity || new Date(oDate) > new Date(t.last_activity))) {
-                                t.last_activity = oDate;
-                            }
-                            
-                            if (o.status === 'closed' || o.jr_is_open === false || (o.side && o.side.toUpperCase() !== t.action)) {
-                                t.exit_price = o.average || o.price || o.jr_price;
-                                if (o.pnl_pct) t.pnl_pct = o.pnl_pct;
-                                t.status = 'closed';
-                            }
-                        }
-                    });
-                    allData = [...allData, ...Object.values(tradeGroups)];
-                }
+                const signals = await response.json();
 
-                // 3. Process
-                console.log("Raw Signals:", signals ? signals.length : 0);
-                console.log("Raw Orders (grouped):", Object.keys(allData).length);
-                
-                const unique = Array.from(new Map(allData.map(item => [item.id, item])).values());
-                console.log("Unique items:", unique.length);
-                
-                unique.sort((a, b) => {
-                    const dateA = new Date(a.last_activity || a.created_at || 0);
-                    const dateB = new Date(b.last_activity || b.created_at || 0);
-                    return dateB - dateA;
-                });
-                
-                console.log("Top 10 unique items after sort:", unique.slice(0, 10));
+                // 2. Sort signals: newest first based on created_at timestamp
+                signals.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-                // ALL-TIME Stats (calculated before slice)
-                let totalRealized = 0;
-                let totalUnrealized = 0;
-                let daily = 0;
-                const localToday = new Date().toLocaleDateString();
+                // Clear errors on success and restore "Online" status
+                globalError.classList.add('hidden');
+                statusDot.className = "w-1.5 h-1.5 bg-blue-400 rounded-full mr-2 shadow-[0_0_8px_#60a5fa] animate-pulse";
+                statusText.innerText = "System Online";
+                statusText.className = "";
 
-                unique.forEach(t => {
-                    const pnl = calculatePnL(t);
-                    const isClosed = t.exit_price || t.pnl_pct != null || t.status === 'closed';
-                    if (isClosed) {
-                        totalRealized += pnl;
-                        if (new Date(t.created_at).toLocaleDateString() === localToday) daily += pnl;
-                    } else {
-                        totalUnrealized += pnl;
-                    }
-                });
+                // Calculate statistics
+                let longCount = 0;
+                let shortCount = 0;
 
-                // Display limited set in UI
-                // We want to show the MOST RECENT trades.
-                // If there are many signals and many orders, let's make sure we see both.
-                
-                const liveSignals = unique.filter(t => !t.exit_price && t.status !== 'closed' && t.pnl_pct == null).slice(0, 10);
-                const pastTrades = unique.filter(t => t.exit_price || t.pnl_pct != null || t.status === 'closed').slice(0, 30);
-
-                console.log("Live Signals count:", liveSignals.length);
-                console.log("Past Trades count:", pastTrades.length);
-
-                // Render
-                const syncBtn = document.querySelector('button[onclick="fetchData()"]');
-                syncBtn.innerText = 'Sync Engine';
-                syncBtn.disabled = false;
-
-                document.getElementById('live-count').innerText = liveSignals.length;
-                
-                // Render Live Signals
-                liveGrid.innerHTML = '';
-                const liveEmpty = document.getElementById('live-empty');
-                
-                if (liveSignals.length === 0) {
-                    liveEmpty.classList.remove('hidden');
+                // Build Table Rows
+                if (!signals || signals.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-12 text-center text-gray-500 italic">No active signals found.</td></tr>';
                 } else {
-                    liveEmpty.classList.add('hidden');
-                    liveSignals.forEach(s => {
-                        const card = document.createElement('div');
-                        card.className = 'glass-card p-6 border-l-4 ' + (s.action === 'BUY' || s.action === 'LONG' ? 'border-blue-500' : 'border-red-500');
-                        card.innerHTML = `
-                            <div class="flex justify-between items-start mb-4">
-                                <div>
-                                    <h3 class="text-lg font-bold">${s.symbol}</h3>
-                                    <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">${s.action} | ${s.id}</p>
-                                </div>
-                                <div class="bg-blue-500/10 text-blue-400 text-[10px] font-black px-2 py-1 rounded">
-                                    ${(s.confidence * 100).toFixed(0)}% CONF
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-2 gap-4 mb-4">
-                                <div>
-                                    <p class="text-[9px] text-gray-500 uppercase font-bold">Entry</p>
-                                    <p class="font-bold mono">${formatPrice(s.entry_price)}</p>
-                                </div>
-                                <div>
-                                    <p class="text-[9px] text-gray-500 uppercase font-bold">Target</p>
-                                    <p class="font-bold mono text-blue-400">${formatPrice(s.tp_price)}</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-                                <span class="text-[10px] font-bold text-blue-500 uppercase tracking-widest">Active Neural Signal</span>
-                            </div>
+                    const rowsHTML = signals.map(signal => {
+                        const actionStr = (signal.action || '').toUpperCase();
+                        
+                        // 9. Color Coding: LONG/BUY = green, SHORT/SELL = red
+                        let actionColor = 'text-gray-400 bg-gray-500/10';
+                        if (actionStr === 'BUY' || actionStr === 'LONG') {
+                            actionColor = 'text-green-500 bg-green-500/10';
+                            longCount++;
+                        } else if (actionStr === 'SELL' || actionStr === 'SHORT') {
+                            actionColor = 'text-red-500 bg-red-500/10';
+                            shortCount++;
+                        }
+
+                        // 4. Convert confidence to percentage nicely
+                        let confRaw = parseFloat(signal.confidence);
+                        let confPercent = isNaN(confRaw) ? '-' : (confRaw <= 1 ? (confRaw * 100).toFixed(0) : confRaw.toFixed(0)) + '%';
+
+                        // 10. Smooth transitions for hover (hover:bg-white/[0.04])
+                        return `
+                            <tr class="hover:bg-white/[0.04] transition-colors duration-200">
+                                <td class="px-6 py-5 font-bold text-white">${signal.symbol || '-'}</td>
+                                <td class="px-6 py-5 mono text-xs text-gray-400">${signal.timeframe || '-'}</td>
+                                <td class="px-6 py-5">
+                                    <span class="px-2.5 py-1 rounded-md text-[10px] font-black tracking-widest ${actionColor}">
+                                        ${signal.action || '-'}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-5 mono text-sm font-bold text-gray-300">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-16 h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                                            <div class="h-full bg-blue-500 rounded-full" style="width: ${confPercent === '-' ? '0' : confPercent}"></div>
+                                        </div>
+                                        ${confPercent}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-5">
+                                    <span class="text-[10px] text-gray-500 mono uppercase">${new Date(signal.created_at).toLocaleString()}</span>
+                                </td>
+                            </tr>
                         `;
-                        liveGrid.appendChild(card);
-                    });
+                    }).join("");
+                    
+                    tbody.innerHTML = rowsHTML;
                 }
 
-                pastBody.innerHTML = pastTrades.length > 0 ? pastTrades.map(t => {
-                    const pnl = calculatePnL(t);
-                    const pnlFormatted = Math.abs(pnl) < 0.01 && pnl !== 0 ? pnl.toFixed(4) : pnl.toFixed(2);
-                    return `
-                        <tr class="hover:bg-white/[0.02] transition-colors">
-                            <td class="px-6 py-5 font-bold text-blue-500">${t.symbol}</td>
-                            <td class="px-6 py-5"><span class="px-2 py-0.5 rounded text-[10px] font-black bg-white/5">${t.action}</span></td>
-                            <td class="px-6 py-5 mono text-xs text-gray-500">$${formatPrice(t.entry_price)}</td>
-                            <td class="px-6 py-5 mono text-xs text-gray-300">$${formatPrice(t.exit_price || 0)}</td>
-                            <td class="px-6 py-5 mono text-sm font-bold ${pnl >= 0 ? 'text-green-500' : 'text-red-500'}">${pnl > 0 ? '+' : ''}${pnlFormatted}%</td>
-                            <td class="px-6 py-5">
-                                <span class="text-[10px] text-gray-500 mono uppercase">${new Date(t.last_activity || t.created_at).toLocaleString()}</span>
+                // 3. Update Stats Dashboard
+                document.getElementById('stat-total').innerText = signals.length;
+                document.getElementById('stat-long').innerText = longCount;
+                document.getElementById('stat-short').innerText = shortCount;
+                document.getElementById('stat-time').innerText = new Date().toLocaleTimeString();
+
+            } catch (err) {
+                console.error("Signal fetch error:", err);
+                
+                // 7. Show friendly error states
+                document.getElementById('error-message').innerText = "Unable to connect to the signal API. Retrying in background...";
+                globalError.classList.remove('hidden');
+                
+                // Update nav status to offline
+                statusDot.className = "w-1.5 h-1.5 bg-red-500 rounded-full mr-2 shadow-[0_0_8px_#ef4444]";
+                statusText.innerText = "System Offline";
+                statusText.className = "text-red-400";
+
+                // If it's the very first load and it fails, show an error row in the table
+                if (isFirstLoad) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="px-6 py-12 text-center text-red-400 italic">
+                                Failed to fetch live data. Please check connection.
                             </td>
                         </tr>
                     `;
-                }).join('') : '<tr><td colspan="6" class="px-6 py-12 text-center text-gray-500 italic">No historical executions detected.</td></tr>';
-
-                document.getElementById('stat-total').innerText = unique.length;
-                document.getElementById('stat-realized').innerText = (totalRealized >= 0 ? '+' : '') + totalRealized.toFixed(2) + '%';
-                document.getElementById('stat-realized').className = `text-3xl font-black ${totalRealized >= 0 ? 'text-green-500' : 'text-red-500'}`;
-                document.getElementById('stat-unrealized').innerText = (totalUnrealized >= 0 ? '+' : '') + totalUnrealized.toFixed(2) + '%';
-                document.getElementById('stat-daily').innerText = (daily >= 0 ? '+' : '') + daily.toFixed(2) + '%';
-                
-                errorBox.classList.add('hidden');
-
-            } catch (err) {
-                console.error(err);
-                const syncBtn = document.querySelector('button[onclick="fetchData()"]');
-                syncBtn.innerText = 'Sync Engine';
-                syncBtn.disabled = false;
-                errorBox.innerText = `System Alert: ${err.message || 'Datalink Interrupt'}`;
-                errorBox.classList.remove('hidden');
+                }
+            } finally {
+                // 6. Hide table loader after fetch finishes
+                tableLoader.classList.add('hidden');
+                isFirstLoad = false;
             }
         }
 
-
-        fetchData();
-        setInterval(fetchData, 60000);
+        // Initialize on load
+        loadSignals();
+        
+        // 5. Refresh data automatically every 5 seconds
+        setInterval(loadSignals, 5000);
     </script>
 </body>
 </html>
